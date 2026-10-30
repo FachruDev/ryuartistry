@@ -80,9 +80,25 @@ components/admin/  komponen CMS (editor, media picker, form)
 
 Halaman publik di-prerender dan di-cache. Saat editor menyimpan di CMS, Server Action memanggil `updateTag(...)` untuk jenis konten tersebut, jadi perubahan langsung tampil tanpa perlu deploy ulang. Konten berstatus **Draf** tidak pernah tampil di situs.
 
-## Deploy
+## Deploy ke Vercel
 
-Set environment variable yang sama dengan `.env`, ditambah:
+1. Buka https://vercel.com/new, impor repo `FachruDev/ryuartistry`. Framework (Next.js) dan Bun terdeteksi otomatis dari `bun.lock`; build command dan output tidak perlu diubah.
+2. Sebelum klik **Deploy**, isi **Environment Variables**. Cara tercepat: tempel isi `.env` ke kolom pertama (Vercel memecahnya per baris), lalu sesuaikan:
 
-- `BETTER_AUTH_URL` dan `SITE_URL`: domain produksi, misalnya `https://ryuartistry.com`
-- `BETTER_AUTH_SECRET`: secret baru khusus produksi
+   | Variable | Nilai di Vercel |
+   | --- | --- |
+   | `DATABASE_URL` | Sama dengan lokal, atau branch Neon khusus produksi |
+   | `AWS_ENDPOINT_URL_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` | Sama dengan lokal |
+   | `BETTER_AUTH_SECRET` | Secret baru khusus produksi (`openssl rand -base64 32`) |
+   | `BETTER_AUTH_URL`, `SITE_URL` | Hapus (jangan pakai `localhost`). Keduanya otomatis memakai domain produksi Vercel; isi hanya jika ingin memaksa domain tertentu |
+   | `ADMIN_*` | Tidak perlu; hanya dipakai `bun run db:seed` di komputer lokal |
+
+   `DATABASE_URL` wajib ada saat build, karena halaman publik di-prerender dari database.
+3. Push ke `main` menghasilkan deploy produksi; push ke branch lain (misalnya `development`) menghasilkan preview.
+
+Catatan:
+
+- Region fungsi bawaan Vercel (`iad1`, Washington) sudah satu wilayah dengan database dan storage Neon (`us-east-1`).
+- Upload media dibatasi 4 MB karena Vercel menolak request di atas 4,5 MB.
+- Mengganti `BETTER_AUTH_SECRET` membuat sesi lama tidak berlaku, jadi admin perlu masuk lagi. Password tidak terpengaruh.
+- Jika produksi memakai database yang sama dengan lokal, konten contoh dan akun admin ikut tampil. Hapus konten contoh dengan `bun run db:seed-demo --clean` bila sudah tidak diperlukan.

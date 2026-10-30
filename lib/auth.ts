@@ -6,8 +6,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { db, schema } from "@/lib/db";
+import { siteUrl } from "@/lib/site";
 
 export const auth = betterAuth({
+  // BETTER_AUTH_URL wins when set; otherwise use the site's own URL (Vercel production domain in deploys).
+  baseURL: process.env.BETTER_AUTH_URL || siteUrl,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {

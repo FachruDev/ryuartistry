@@ -3,7 +3,8 @@ import { db, schema } from "@/lib/db";
 import { slugify } from "@/lib/forms";
 import { uploadPublic } from "@/lib/storage";
 
-const MAX_BYTES = 8 * 1024 * 1024;
+// Vercel Functions reject request bodies over 4.5 MB, so cap uploads just below that.
+const MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
   const ext = ALLOWED[file.type];
   if (!ext) return Response.json({ error: "Format didukung: JPG, PNG, WebP, AVIF, GIF." }, { status: 400 });
-  if (file.size > MAX_BYTES) return Response.json({ error: "Ukuran maksimal 8 MB." }, { status: 400 });
+  if (file.size > MAX_BYTES) return Response.json({ error: "Ukuran maksimal 4 MB." }, { status: 400 });
 
   const width = Number(form.get("width")) || null;
   const height = Number(form.get("height")) || null;
