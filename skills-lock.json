@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "image-fetcher": {
+      "source": "Interstellar-code/claud-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/image-fetcher/SKILL.md",
+      "computedHash": "c52e52745e74b5587dd4f29e208a740cfa230be190aa49dd6b6a57d414a9ad19"
+    }
+  }
+}
