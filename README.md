@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ryuartistry
 
-## Getting Started
+Website studio kreatif Ryuartistry (AI, game, software, kreatif) beserta CMS bawaan di `/admin`.
 
-First, run the development server:
+- **Situs publik** dua bahasa: `/id` dan `/en`. Pengunjung diarahkan otomatis sesuai bahasa browser.
+- **CMS** untuk Karya (portofolio), Lab (blog/devlog), Layanan, Tim, Karier, Inbox kontak, Media, dan Pengaturan situs.
+
+## Stack
+
+| Bagian | Teknologi |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Cache Components, Partial Prefetching) |
+| Database | Neon Postgres + Drizzle ORM |
+| Auth | Better Auth (email + password, tanpa pendaftaran publik) |
+| Media | Neon Object Storage (S3), bucket `assets-public` |
+| Editor | Tiptap (disimpan sebagai JSON, dirender di server) |
+| Visual | Tailwind v4, Motion, Lenis, React Three Fiber |
+
+## Menjalankan secara lokal
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+cp .env.example .env    # isi DATABASE_URL, AWS_*, BETTER_AUTH_SECRET, ADMIN_*
+bun run db:migrate      # membuat tabel
+bun run db:seed         # kategori, layanan awal, pengaturan, akun admin pertama
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka http://localhost:3000 untuk situs dan http://localhost:3000/admin untuk CMS. Masuk dengan `ADMIN_EMAIL` dan `ADMIN_PASSWORD` dari `.env`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Script
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Perintah | Fungsi |
+| --- | --- |
+| `bun run db:generate` | Membuat file migrasi setelah `lib/db/schema.ts` diubah |
+| `bun run db:migrate` | Menjalankan migrasi ke database |
+| `bun run db:studio` | Membuka Drizzle Studio |
+| `bun run db:seed` | Mengisi data awal (aman dijalankan berulang) |
 
-## Learn More
+## Struktur
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/[lang]/        situs publik (beranda, work, lab, services, about, careers, contact)
+app/admin/         CMS; semua halaman memeriksa sesi sendiri
+app/api/           handler Better Auth dan upload media
+lib/db/schema.ts   skema database (teks dua bahasa disimpan sebagai { id, en })
+lib/queries.ts     query publik dengan "use cache" + cacheTag
+lib/actions/       Server Actions CMS; setiap simpan memanggil updateTag
+components/site/   komponen situs (hero 3D, manifesto, panel disiplin, dsb.)
+components/admin/  komponen CMS (editor, media picker, form)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Cara konten diperbarui
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Halaman publik di-prerender dan di-cache. Saat editor menyimpan di CMS, Server Action memanggil `updateTag(...)` untuk jenis konten tersebut, jadi perubahan langsung tampil tanpa perlu deploy ulang. Konten berstatus **Draf** tidak pernah tampil di situs.
 
-## Deploy on Vercel
+## Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set environment variable yang sama dengan `.env`, ditambah:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `BETTER_AUTH_URL` dan `SITE_URL`: domain produksi, misalnya `https://ryuartistry.com`
+- `BETTER_AUTH_SECRET`: secret baru khusus produksi
