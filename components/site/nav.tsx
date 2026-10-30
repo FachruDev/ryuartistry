@@ -17,12 +17,14 @@ const roundButton = `size-11 rounded-full text-ink transition-transform duration
 export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["nav"]; themeLabel: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
+  // The highlight jumps to a clicked link right away instead of waiting for the next page.
+  const [clicked, setClicked] = useState<string | null>(null);
   const [lastPath, setLastPath] = useState(pathname);
 
   if (pathname !== lastPath) {
     setLastPath(pathname);
     setOpen(false);
+    setClicked(null);
   }
 
   useEffect(() => {
@@ -41,11 +43,10 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
     { href: `/${lang}/about`, label: nav.about },
     { href: `/${lang}/contact`, label: nav.contact },
   ];
-  const menuLinks = [...links.slice(0, 5), { href: `/${lang}/careers`, label: nav.careers }, links[5]];
   // Home only matches itself; every other link also covers its detail pages.
   const isActive = (href: string) => pathname === href || (href !== home && pathname.startsWith(`${href}/`));
   const current = links.find((l) => isActive(l.href))?.href ?? null;
-  const lit = hovered ?? current;
+  const lit = clicked ?? current;
 
   const otherLang: Locale = lang === "id" ? "en" : "id";
   const switchHref = pathname.replace(/^\/(id|en)(?=\/|$)/, `/${otherLang}`);
@@ -59,23 +60,23 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
             <span className="inline-block text-accent transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-1.5">.</span>
           </Link>
 
-          <nav aria-label={nav.main} onMouseLeave={() => setHovered(null)} className={`hidden rounded-full p-1 md:flex ${glass}`}>
+          <nav aria-label={nav.main} className={`hidden rounded-full p-1 md:flex ${glass}`}>
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 aria-current={isActive(l.href) ? "page" : undefined}
-                onMouseEnter={() => setHovered(l.href)}
-                onFocus={() => setHovered(l.href)}
-                onBlur={() => setHovered(null)}
-                className="relative rounded-full px-3 py-2 text-[14px] font-medium text-muted transition-colors duration-300 hover:text-ink aria-[current=page]:text-ink lg:px-4 lg:text-[15px]"
+                onClick={() => setClicked(l.href)}
+                className={`relative rounded-full px-3 py-2 text-[14px] font-medium transition-colors duration-300 lg:px-4 lg:text-[15px] ${
+                  lit === l.href ? "text-paper" : "text-muted"
+                }`}
               >
                 {lit === l.href && (
                   <motion.span
                     layoutId="nav-highlight"
                     aria-hidden
-                    className="absolute inset-0 rounded-full bg-paper-raised shadow-[0_2px_10px_-4px_rgb(var(--shade)/0.25)] ring-1 ring-line"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="absolute inset-0 rounded-full bg-ink shadow-[0_6px_16px_-8px_rgb(var(--shade)/0.6)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
                   />
                 )}
                 <span className="relative">{l.label}</span>
@@ -132,15 +133,15 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
               className="fixed inset-x-3 top-[4.5rem] z-40 origin-top rounded-[2rem] bg-paper-raised/95 p-2 shadow-[0_30px_60px_-30px_rgb(var(--shade)/0.5)] ring-1 ring-line backdrop-blur-xl md:hidden"
             >
               <ul>
-                {menuLinks.map((l, i) => (
+                {links.map((l, i) => (
                   <motion.li key={l.href} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.04 + i * 0.04, ease }}>
                     <Link
                       href={l.href}
                       aria-current={isActive(l.href) ? "page" : undefined}
-                      className="group display flex items-center justify-between rounded-[1.4rem] px-4 py-3 text-[2rem] text-ink transition-colors aria-[current=page]:bg-paper"
+                      className="group display flex items-center justify-between rounded-[1.4rem] px-4 py-3 text-[2rem] text-ink transition-colors aria-[current=page]:bg-ink aria-[current=page]:text-paper"
                     >
                       {l.label}
-                      <ArrowRight weight="bold" className="size-5 text-muted transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1" />
+                      <ArrowRight weight="bold" className="size-5 text-muted group-aria-[current=page]:text-paper" />
                     </Link>
                   </motion.li>
                 ))}

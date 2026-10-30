@@ -24,7 +24,7 @@ export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.work.eyebrow} title={dict.work.title} intro={dict.work.intro} />
+      <PageIntro title={dict.work.title} intro={dict.work.intro} />
       <section className="mx-auto max-w-[1240px] px-4 sm:px-8">
         <WorkGrid items={projects.map(toWorkCard)} categories={categories} lang={lang} labels={dict.work} />
       </section>

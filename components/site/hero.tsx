@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { ButtonLink, Dotted, Eyebrow, Sparkle } from "./ui";
+import { ButtonLink, Dotted, Sparkle } from "./ui";
 
 const tones = ["var(--wisteria)", "var(--jade)", "var(--mizu)", "var(--sakura)"];
 const slide = "transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]";
@@ -69,7 +69,6 @@ function RotatingWord({ words }: { words: string[] }) {
 }
 
 export function Hero({
-  eyebrow,
   lead,
   words,
   customTitle,
@@ -77,7 +76,6 @@ export function Hero({
   primary,
   secondary,
 }: {
-  eyebrow: string;
   lead: string;
   words: string[];
   customTitle?: string;
@@ -109,15 +107,11 @@ export function Hero({
       </motion.div>
 
       <div className="relative">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}>
-          <Eyebrow>{eyebrow}</Eyebrow>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.08, ease: [0.32, 0.72, 0, 1] }}
-          className="display relative mx-auto mt-7 text-[clamp(3.3rem,10.5vw,8.4rem)] text-ink"
+          transition={{ duration: 0.9, ease: [0.32, 0.72, 0, 1] }}
+          className="display relative mx-auto text-[clamp(3.3rem,10.5vw,8.4rem)] text-ink"
         >
           {customTitle ? (
             <span className="mx-auto block max-w-[13ch]">

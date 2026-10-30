@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { Check } from "@phosphor-icons/react";
 import { submitInquiry, type ContactState } from "@/lib/actions/inquiries";
 import type { Dictionary } from "@/lib/dictionaries";
-import { ArrowIcon } from "./ui";
+import { ArrowIcon, buttonClass } from "./ui";
 
 const field =
   "w-full rounded-2xl bg-paper px-5 py-4 text-lg text-ink ring-1 ring-line outline-none transition-shadow duration-300 placeholder:text-muted/60 focus:ring-2 focus:ring-ink aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-danger";
@@ -91,7 +91,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
       <button
         type="submit"
         disabled={pending}
-        className="group inline-flex items-center gap-2.5 rounded-full bg-ink px-7 py-4 text-base font-semibold text-paper transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-16px_rgb(var(--shade)/0.55)] active:scale-[0.97] disabled:opacity-60"
+        className={`${buttonClass("solid")} disabled:opacity-60`}
       >
         {pending ? t.sending : t.submit}
         <ArrowIcon className="size-4 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1" />

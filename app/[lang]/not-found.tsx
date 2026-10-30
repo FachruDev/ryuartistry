@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Sparkle } from "@/components/site/ui";
+import { ButtonLink, Sparkle } from "@/components/site/ui";
 
 // Rendered inside the [lang] layout, which has already validated the locale.
 export default function NotFound() {
@@ -16,18 +15,10 @@ export default function NotFound() {
           This page couldn&apos;t be found.
         </p>
         <div className="mt-10 flex justify-center gap-3">
-          <Link
-            href="/id"
-            className="rounded-full bg-ink px-6 py-3.5 font-semibold text-paper transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5"
-          >
-            Beranda
-          </Link>
-          <Link
-            href="/en"
-            className="rounded-full bg-paper-raised/60 px-6 py-3.5 font-semibold text-ink ring-1 ring-line transition-[transform,background-color] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:bg-paper-raised"
-          >
+          <ButtonLink href="/id">Beranda</ButtonLink>
+          <ButtonLink href="/en" variant="ghost">
             Home
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </section>

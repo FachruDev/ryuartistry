@@ -94,7 +94,7 @@ export const verification = pgTable("verification", {
 
 export const contentStatus = pgEnum("content_status", ["draft", "published"]);
 export const categoryKind = pgEnum("category_kind", ["project", "post"]);
-export const inquiryType = pgEnum("inquiry_type", ["project", "collab", "career", "other"]);
+export const inquiryType = pgEnum("inquiry_type", ["project", "collab", "other"]);
 export const inquiryStatus = pgEnum("inquiry_status", ["new", "read", "archived"]);
 
 export const media = pgTable("media", {
@@ -184,19 +184,6 @@ export const teamMembers = pgTable("team_members", {
   ...timestamps,
 });
 
-export const jobs = pgTable("jobs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  slug: text("slug").notNull().unique(),
-  title: jsonb("title").$type<Localized>().notNull(),
-  summary: jsonb("summary").$type<Localized>().default(emptyLocalized).notNull(),
-  body: jsonb("body").$type<LocalizedDoc>().default(emptyDoc).notNull(),
-  location: text("location").default("Remote").notNull(),
-  employmentType: text("employment_type").default("Full-time").notNull(),
-  isOpen: boolean("is_open").default(true).notNull(),
-  sortOrder: integer("sort_order").default(0).notNull(),
-  ...timestamps,
-});
-
 export const inquiries = pgTable(
   "inquiries",
   {
@@ -245,7 +232,6 @@ export type Project = typeof projects.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Service = typeof services.$inferSelect;
 export type TeamMember = typeof teamMembers.$inferSelect;
-export type Job = typeof jobs.$inferSelect;
 export type Inquiry = typeof inquiries.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type Category = typeof categories.$inferSelect;

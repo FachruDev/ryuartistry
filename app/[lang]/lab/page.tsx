@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/lab">): Pr
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.lab.eyebrow, description: dict.lab.intro, alternates: alternates(lang, "/lab") };
+  return { title: dict.nav.lab, description: dict.lab.intro, alternates: alternates(lang, "/lab") };
 }
 
 export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
@@ -25,7 +25,7 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.lab.eyebrow} title={dict.lab.title} intro={dict.lab.intro} />
+      <PageIntro title={dict.lab.title} intro={dict.lab.intro} />
       <section className="mx-auto max-w-[980px] px-4 sm:px-8">
         {posts.length === 0 ? (
           <p className="text-center text-lg text-muted">{dict.lab.empty}</p>

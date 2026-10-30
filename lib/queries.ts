@@ -128,38 +128,14 @@ export async function getTeam() {
   });
 }
 
-export async function getOpenJobs() {
-  "use cache";
-  cacheLife("max");
-  cacheTag(tags.jobs);
-  return db
-    .select()
-    .from(schema.jobs)
-    .where(eq(schema.jobs.isOpen, true))
-    .orderBy(asc(schema.jobs.sortOrder));
-}
-
-export async function getJobBySlug(slug: string) {
-  "use cache";
-  cacheLife("max");
-  cacheTag(tags.jobs);
-  const [job] = await db
-    .select()
-    .from(schema.jobs)
-    .where(and(eq(schema.jobs.slug, slug), eq(schema.jobs.isOpen, true)));
-  return job ?? null;
-}
-
 /** Slugs to prerender. Cache Components needs at least one entry per dynamic route. */
-export async function getPublishedSlugs(kind: "projects" | "posts" | "jobs") {
+export async function getPublishedSlugs(kind: "projects" | "posts") {
   "use cache";
   cacheLife("max");
   cacheTag(tags[kind]);
   const rows =
     kind === "projects"
       ? await db.select({ slug: schema.projects.slug }).from(schema.projects).where(published(schema.projects))
-      : kind === "posts"
-        ? await db.select({ slug: schema.posts.slug }).from(schema.posts).where(published(schema.posts))
-        : await db.select({ slug: schema.jobs.slug }).from(schema.jobs).where(eq(schema.jobs.isOpen, true));
+      : await db.select({ slug: schema.posts.slug }).from(schema.posts).where(published(schema.posts));
   return rows.map((r) => r.slug);
 }

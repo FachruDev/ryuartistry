@@ -3,7 +3,7 @@
 Website studio kreatif Ryuartistry (AI, game, software, kreatif) beserta CMS bawaan di `/admin`.
 
 - **Situs publik** dua bahasa: `/id` dan `/en`. Pengunjung diarahkan otomatis sesuai bahasa browser.
-- **CMS** untuk Karya (portofolio), Lab (blog/devlog), Layanan, Tim, Karier, Inbox kontak, Media, dan Pengaturan situs.
+- **CMS** untuk Karya (portofolio), Lab (blog/devlog), Layanan, Tim, Inbox kontak, Media, dan Pengaturan situs.
 
 ## Stack
 
@@ -36,7 +36,7 @@ Buka http://localhost:3000 untuk situs dan http://localhost:3000/admin untuk CMS
 | `bun run db:migrate` | Menjalankan migrasi ke database |
 | `bun run db:studio` | Membuka Drizzle Studio |
 | `bun run db:seed` | Mengisi data awal (aman dijalankan berulang) |
-| `bun run db:seed-demo` | Mengisi konten contoh: 6 karya, 3 catatan Lab, 1 lowongan |
+| `bun run db:seed-demo` | Mengisi konten contoh: 6 karya dan 3 catatan Lab |
 | `bun run db:seed-demo --clean` | Menghapus semua konten contoh |
 
 ## Konten contoh
@@ -68,7 +68,7 @@ Tema mengikuti sistem sampai pengunjung memilih lewat tombol di navigasi atau fo
 ## Struktur
 
 ```
-app/[lang]/        situs publik (beranda, work, lab, services, about, careers, contact)
+app/[lang]/        situs publik (beranda, work, lab, services, about, contact)
 app/admin/         CMS; semua halaman memeriksa sesi sendiri
 app/api/           handler Better Auth dan upload media
 lib/db/schema.ts   skema database (teks dua bahasa disimpan sebagai { id, en })

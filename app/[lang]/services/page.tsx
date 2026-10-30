@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/services">
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.services.eyebrow, description: dict.services.intro, alternates: alternates(lang, "/services") };
+  return { title: dict.nav.services, description: dict.services.intro, alternates: alternates(lang, "/services") };
 }
 
 export default async function ServicesPage({ params }: PageProps<"/[lang]/services">) {
@@ -27,7 +27,7 @@ export default async function ServicesPage({ params }: PageProps<"/[lang]/servic
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.services.eyebrow} title={dict.services.title} intro={dict.services.intro} />
+      <PageIntro title={dict.services.title} intro={dict.services.intro} />
       <section className="mx-auto max-w-[1000px] px-4 pb-12 sm:px-8">
         {services.length === 0 ? (
           <p className="text-center text-lg text-muted">{dict.services.empty}</p>

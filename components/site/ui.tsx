@@ -29,12 +29,22 @@ export function Dotted({ text }: { text: string }) {
   );
 }
 
+// A ::before layer that sweeps in from the left on hover; the pill's rounded overflow clips its edges.
+const sweep =
+  "relative isolate overflow-hidden transition-[color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] before:absolute before:inset-0 before:-z-10 before:origin-left before:scale-x-0 before:transition-transform before:duration-500 before:ease-[cubic-bezier(0.32,0.72,0,1)] hover:before:scale-x-100 focus-visible:before:scale-x-100";
+
+// Resting colours, then the sweep colour and the text colour that sits on it.
 const buttonVariants = {
-  solid: "bg-ink text-paper hover:shadow-[0_16px_32px_-16px_rgb(var(--shade)/0.55)]",
-  ghost: "bg-paper-raised/60 text-ink ring-1 ring-line hover:bg-paper-raised",
-  pastel: "bg-on-pastel text-white",
-  soft: "bg-white/45 text-on-pastel hover:bg-white/70",
+  solid: "bg-ink text-paper before:bg-yuzu hover:text-on-pastel focus-visible:text-on-pastel",
+  ghost: "bg-paper-raised/60 text-ink ring-1 ring-line before:bg-ink hover:text-paper hover:ring-ink focus-visible:text-paper",
+  pastel: "bg-on-pastel text-white before:bg-white hover:text-on-pastel focus-visible:text-on-pastel",
+  soft: "bg-white/45 text-on-pastel before:bg-on-pastel hover:text-white focus-visible:text-white",
 };
+
+/** Pill button classes, shared by links and form buttons. */
+export function buttonClass(variant: keyof typeof buttonVariants = "solid") {
+  return `group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[15px] font-semibold active:scale-[0.97] ${sweep} ${buttonVariants[variant]}`;
+}
 
 export function ButtonLink({
   href,
@@ -48,10 +58,7 @@ export function ButtonLink({
   className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={`group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[15px] font-semibold transition-[transform,box-shadow,background-color] ${spring} hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] ${buttonVariants[variant]} ${className}`}
-    >
+    <Link href={href} className={`${buttonClass(variant)} ${className}`}>
       {children}
       <ArrowIcon className={`size-4 transition-transform ${spring} group-hover:translate-x-1`} />
     </Link>
@@ -63,23 +70,11 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
     <Link
       href={href}
       transitionTypes={["nav-back"]}
-      className="group inline-flex items-center gap-2 rounded-full bg-paper-raised/70 py-2 pl-3 pr-4 text-sm font-semibold text-ink ring-1 ring-line transition-colors hover:bg-paper-raised"
+      className={`group inline-flex items-center gap-2 rounded-full bg-paper-raised/70 py-2 pl-3 pr-4 text-sm font-semibold text-ink ring-1 ring-line before:bg-ink hover:text-paper hover:ring-ink focus-visible:text-paper ${sweep}`}
     >
       <ArrowIcon direction="left" className={`size-4 transition-transform ${spring} group-hover:-translate-x-1`} />
       {children}
     </Link>
-  );
-}
-
-/** Small pill that sits above a heading. */
-export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full bg-paper-raised/70 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted ring-1 ring-line ${className}`}
-    >
-      <span aria-hidden className="size-1.5 rounded-full bg-accent" />
-      {children}
-    </span>
   );
 }
 

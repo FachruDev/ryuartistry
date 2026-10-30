@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/contact">)
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.contact.eyebrow, description: dict.contact.intro, alternates: alternates(lang, "/contact") };
+  return { title: dict.nav.contact, description: dict.contact.intro, alternates: alternates(lang, "/contact") };
 }
 
 export default async function ContactPage({ params }: PageProps<"/[lang]/contact">) {
@@ -24,7 +24,7 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.contact.eyebrow} title={dict.contact.title} intro={dict.contact.intro} />
+      <PageIntro title={dict.contact.title} intro={dict.contact.intro} />
       <section className="px-4 sm:px-8">
         <Reveal className="mx-auto max-w-[880px]">
           <div className="rounded-[2.5rem] bg-paper-raised p-5 ring-1 ring-line sm:p-10 md:rounded-[3.5rem] md:p-14">

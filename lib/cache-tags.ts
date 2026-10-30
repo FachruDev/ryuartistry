@@ -4,7 +4,6 @@ export const tags = {
   posts: "posts",
   services: "services",
   team: "team",
-  jobs: "jobs",
   settings: "settings",
   categories: "categories",
 } as const;

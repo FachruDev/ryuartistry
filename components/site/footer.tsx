@@ -21,7 +21,6 @@ export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary })
     { href: `/${lang}/lab`, label: dict.nav.lab },
     { href: `/${lang}/services`, label: dict.nav.services },
     { href: `/${lang}/about`, label: dict.nav.about },
-    { href: `/${lang}/careers`, label: dict.nav.careers },
   ];
 
   return (

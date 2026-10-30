@@ -7,7 +7,6 @@ const id = {
     lab: "Lab",
     services: "Layanan",
     about: "Tentang",
-    careers: "Karier",
     contact: "Kontak",
     menu: "Menu",
     close: "Tutup",
@@ -16,7 +15,6 @@ const id = {
   },
   theme: { title: "Tema", toggle: "Ganti tema terang atau gelap", light: "Terang", dark: "Gelap" },
   home: {
-    eyebrow: "Studio kreatif dari Indonesia",
     heroLead: "Kami membuat",
     heroWords: ["AI", "game", "software", "brand"],
     heroSubtitle:
@@ -52,7 +50,6 @@ const id = {
     { key: "creative", title: "Kreatif", tagline: "Visual yang menghentikan jempol.", body: "Identitas brand, motion, ilustrasi, dan kampanye yang membuat brand terasa punya kepribadian." },
   ],
   work: {
-    eyebrow: "Portofolio",
     title: "Karya.",
     intro: "Proyek di persimpangan AI, game, software, dan desain. Setiap satu dikerjakan dengan teliti.",
     all: "Semua",
@@ -66,7 +63,6 @@ const id = {
     next: "Karya berikutnya",
   },
   lab: {
-    eyebrow: "Lab",
     title: "Catatan dari meja kerja.",
     intro: "Riset, devlog, dan eksperimen kecil yang kami tulis sambil bekerja.",
     empty: "Belum ada catatan. Kami sedang menulis.",
@@ -74,13 +70,11 @@ const id = {
     back: "Semua catatan",
   },
   services: {
-    eyebrow: "Layanan",
     title: "Yang bisa kami bantu.",
     intro: "Mulai dari satu fitur AI sampai produk lengkap. Buka setiap layanan untuk melihat detailnya.",
     empty: "Daftar layanan segera hadir.",
   },
   about: {
-    eyebrow: "Tentang",
     title: "Studio kecil, rasa penasaran besar.",
     intro:
       "Ryuartistry adalah tim desainer, engineer, dan pembuat game yang suka menjelajahi teknologi baru lalu mengubahnya jadi sesuatu yang bermakna.",
@@ -95,17 +89,7 @@ const id = {
       { title: "Main serius", body: "Kami bermain-main dengan ide, tapi serius dengan hasilnya." },
     ],
   },
-  careers: {
-    eyebrow: "Karier",
-    title: "Tumbuh bersama kami.",
-    intro: "Kami mencari orang yang penasaran, teliti, dan senang bereksperimen.",
-    empty: "Belum ada posisi terbuka, tapi kami selalu senang berkenalan.",
-    sayHello: "Kirim perkenalan",
-    apply: "Lamar posisi ini",
-    back: "Semua posisi",
-  },
   contact: {
-    eyebrow: "Kontak",
     title: "Mari bicara.",
     intro: "Ceritakan idemu. Kami biasanya membalas dalam 1–2 hari kerja.",
     orEmail: "Atau kirim email langsung ke",
@@ -113,7 +97,7 @@ const id = {
     email: "Email",
     company: "Perusahaan (opsional)",
     type: "Kebutuhan",
-    types: { project: "Proyek baru", collab: "Kolaborasi", career: "Karier", other: "Lainnya" },
+    types: { project: "Proyek baru", collab: "Kolaborasi", other: "Lainnya" },
     message: "Pesan",
     submit: "Kirim pesan",
     sending: "Mengirim…",
@@ -139,7 +123,6 @@ const en: Dictionary = {
     lab: "Lab",
     services: "Services",
     about: "About",
-    careers: "Careers",
     contact: "Contact",
     menu: "Menu",
     close: "Close",
@@ -148,7 +131,6 @@ const en: Dictionary = {
   },
   theme: { title: "Theme", toggle: "Switch between light and dark theme", light: "Light", dark: "Dark" },
   home: {
-    eyebrow: "A creative studio from Indonesia",
     heroLead: "We make",
     heroWords: ["AI", "games", "software", "brands"],
     heroSubtitle:
@@ -184,7 +166,6 @@ const en: Dictionary = {
     { key: "creative", title: "Creative", tagline: "Visuals that stop the thumb.", body: "Brand identity, motion, illustration, and campaigns that give a brand a personality." },
   ],
   work: {
-    eyebrow: "Portfolio",
     title: "Work.",
     intro: "Projects where AI, games, software, and design meet. Each one made with care.",
     all: "All",
@@ -198,7 +179,6 @@ const en: Dictionary = {
     next: "Next project",
   },
   lab: {
-    eyebrow: "Lab",
     title: "Notes from the workbench.",
     intro: "Research, devlogs, and small experiments we write while we work.",
     empty: "No notes yet. We're writing.",
@@ -206,13 +186,11 @@ const en: Dictionary = {
     back: "All notes",
   },
   services: {
-    eyebrow: "Services",
     title: "How we can help.",
     intro: "From a single AI feature to a full product. Open each service for the details.",
     empty: "Services coming soon.",
   },
   about: {
-    eyebrow: "About",
     title: "A small studio with big curiosity.",
     intro:
       "Ryuartistry is a team of designers, engineers, and game makers who love exploring new technology and turning it into something meaningful.",
@@ -227,17 +205,7 @@ const en: Dictionary = {
       { title: "Serious play", body: "We play with ideas, and take the results seriously." },
     ],
   },
-  careers: {
-    eyebrow: "Careers",
-    title: "Grow with us.",
-    intro: "We're looking for people who are curious, careful, and love to experiment.",
-    empty: "No open roles right now, but we're always happy to say hello.",
-    sayHello: "Introduce yourself",
-    apply: "Apply for this role",
-    back: "All roles",
-  },
   contact: {
-    eyebrow: "Contact",
     title: "Let's talk.",
     intro: "Tell us your idea. We usually reply within 1–2 business days.",
     orEmail: "Or email us directly at",
@@ -245,7 +213,7 @@ const en: Dictionary = {
     email: "Email",
     company: "Company (optional)",
     type: "What you need",
-    types: { project: "New project", collab: "Collaboration", career: "Careers", other: "Other" },
+    types: { project: "New project", collab: "Collaboration", other: "Other" },
     message: "Message",
     submit: "Send message",
     sending: "Sending…",

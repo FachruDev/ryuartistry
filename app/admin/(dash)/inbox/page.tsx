@@ -10,7 +10,7 @@ import { requireUser } from "@/lib/auth";
 export const metadata = { title: "Inbox" };
 export const instant = false;
 
-const typeLabel = { project: "Proyek baru", collab: "Kolaborasi", career: "Karier", other: "Lainnya" } as const;
+const typeLabel = { project: "Proyek baru", collab: "Kolaborasi", other: "Lainnya" } as const;
 
 export default async function InboxPage({ searchParams }: PageProps<"/admin/inbox">) {
   await requireUser();

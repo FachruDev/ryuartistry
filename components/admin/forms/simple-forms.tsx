@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import type { Job, Media, Service, SiteSettings, TeamMember } from "@/lib/db/schema";
+import type { Media, Service, SiteSettings, TeamMember } from "@/lib/db/schema";
 import { linksToText, type FormState } from "@/lib/forms";
 import { LocalizedField } from "../localized-field";
-import { LocalizedRichText } from "../rich-text";
 import { MediaPicker } from "../media-picker";
-import { Checkbox, Field, FormMessage, Input, Select, SubmitButton, Textarea } from "../ui";
+import { Field, FormMessage, Input, Select, SubmitButton, Textarea } from "../ui";
 
 type Action = (prev: FormState, form: FormData) => Promise<FormState>;
 
@@ -60,44 +59,6 @@ export function TeamForm({ action, member }: { action: Action; member?: TeamMemb
       </Field>
       <FormMessage error={state.error} ok={state.ok} />
       <SubmitButton>{member ? "Simpan perubahan" : "Tambah anggota"}</SubmitButton>
-    </form>
-  );
-}
-
-export function JobForm({ action, job }: { action: Action; job?: Job }) {
-  const [state, formAction] = useActionState(action, {});
-  const errors = state.fieldErrors ?? {};
-  return (
-    <form action={formAction} className="grid gap-8 xl:grid-cols-[1fr_320px]">
-      <div className="space-y-6">
-        <LocalizedField name="title" label="Posisi" defaultValue={job?.title} error={errors.title} />
-        <LocalizedField name="summary" label="Ringkasan" multiline defaultValue={job?.summary} />
-        <LocalizedRichText name="body" label="Deskripsi pekerjaan" defaultValue={job?.body} />
-      </div>
-      <aside className="space-y-5 xl:sticky xl:top-8 xl:self-start">
-        <div className="space-y-4 rounded-lg border border-line bg-paper-raised p-4">
-          <Checkbox name="isOpen" label="Lowongan dibuka" defaultChecked={job?.isOpen ?? true} />
-          <FormMessage error={state.error} ok={state.ok} />
-          <SubmitButton className="w-full">{job ? "Simpan perubahan" : "Buat lowongan"}</SubmitButton>
-        </div>
-        <Field label="Slug" error={errors.slug} hint="Kosongkan untuk otomatis">
-          <Input name="slug" defaultValue={job?.slug} />
-        </Field>
-        <Field label="Lokasi">
-          <Input name="location" defaultValue={job?.location ?? "Remote"} />
-        </Field>
-        <Field label="Jenis">
-          <Select name="employmentType" defaultValue={job?.employmentType ?? "Full-time"}>
-            <option>Full-time</option>
-            <option>Part-time</option>
-            <option>Contract</option>
-            <option>Internship</option>
-          </Select>
-        </Field>
-        <Field label="Urutan">
-          <Input name="sortOrder" type="number" defaultValue={job?.sortOrder ?? 0} />
-        </Field>
-      </aside>
     </form>
   );
 }

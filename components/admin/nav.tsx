@@ -9,7 +9,6 @@ const items = [
   { href: "/admin/posts", label: "Lab" },
   { href: "/admin/services", label: "Layanan" },
   { href: "/admin/team", label: "Tim" },
-  { href: "/admin/jobs", label: "Karier" },
   { href: "/admin/inbox", label: "Inbox" },
   { href: "/admin/media", label: "Media" },
   { href: "/admin/settings", label: "Pengaturan" },

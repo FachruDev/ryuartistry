@@ -1,6 +1,6 @@
 /**
  * Placeholder content so the site can be reviewed before real work is added.
- *   bun run db:seed-demo           insert demo projects, lab notes, a job, and their images
+ *   bun run db:seed-demo           insert demo projects, lab notes, and their images
  *   bun run db:seed-demo --clean   remove everything this script created
  * Images live in /public/demo (Unsplash, free licence) and are referenced by local URL.
  */
@@ -46,12 +46,10 @@ const images: Record<string, L> = {
 
 const projectSlugs = ["mimpi-naga", "pulau-mochi", "kanvas", "kopi-senja", "suara-ombak", "lentera"];
 const postSlugs = ["tanah-liat-dari-shader", "devlog-pulau-mochi-1", "agen-ai-kecil"];
-const jobSlugs = ["creative-developer-webgl"];
 
 async function clean() {
   await db.delete(schema.projects).where(inArray(schema.projects.slug, projectSlugs));
   await db.delete(schema.posts).where(inArray(schema.posts.slug, postSlugs));
-  await db.delete(schema.jobs).where(inArray(schema.jobs.slug, jobSlugs));
   await db.delete(schema.media).where(like(schema.media.key, "demo/%"));
   console.log("Demo content removed.");
 }
@@ -261,23 +259,7 @@ async function seed() {
     },
   ]);
 
-  await db.insert(schema.jobs).values({
-    slug: "creative-developer-webgl",
-    title: { id: "Creative Developer (WebGL)", en: "Creative Developer (WebGL)" },
-    summary: { id: "Bantu kami membuat pengalaman web 3D yang terasa seperti mainan.", en: "Help us build 3D web experiences that feel like toys." },
-    body: doc(
-      { id: "Yang akan kamu kerjakan", en: "What you'll do" },
-      [{ id: "Membangun scene interaktif dengan Three.js dan shader untuk proyek klien dan eksperimen Lab.", en: "Build interactive scenes with Three.js and shaders for client projects and Lab experiments." }],
-      [
-        { id: "Pengalaman dengan Three.js atau WebGL", en: "Experience with Three.js or WebGL" },
-        { id: "Peka terhadap gerak dan detail", en: "An eye for motion and detail" },
-      ],
-    ),
-    location: "Remote",
-    employmentType: "Full-time",
-  });
-
-  console.log(`Demo content added: ${projectSlugs.length} projects, ${postSlugs.length} notes, 1 job, ${mediaRows.length} images.`);
+  console.log(`Demo content added: ${projectSlugs.length} projects, ${postSlugs.length} notes, ${mediaRows.length} images.`);
 }
 
 if (process.argv.includes("--clean")) await clean();

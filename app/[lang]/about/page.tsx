@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/about">): 
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.about.eyebrow, description: dict.about.intro, alternates: alternates(lang, "/about") };
+  return { title: dict.nav.about, description: dict.about.intro, alternates: alternates(lang, "/about") };
 }
 
 export default async function AboutPage({ params }: PageProps<"/[lang]/about">) {
@@ -27,7 +27,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.about.eyebrow} title={dict.about.title} intro={dict.about.intro} />
+      <PageIntro title={dict.about.title} intro={dict.about.intro} />
 
       <section className="px-4 pb-24 sm:px-8 md:pb-36">
         <Reveal className="mx-auto max-w-[900px] rounded-[2.5rem] bg-paper-raised/70 p-8 ring-1 ring-line md:rounded-[3.5rem] md:p-14">
@@ -91,7 +91,12 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
         </section>
       )}
 
-      <CtaCard title={dict.careers.title} body={dict.careers.intro} primary={{ href: `/${lang}/careers`, label: dict.nav.careers }} />
+      <CtaCard
+        title={dict.home.ctaTitle}
+        body={dict.home.ctaBody}
+        primary={{ href: `/${lang}/contact`, label: dict.home.ctaSecondary }}
+        secondary={{ href: `/${lang}/work`, label: dict.home.ctaPrimary }}
+      />
     </PageTransition>
   );
 }

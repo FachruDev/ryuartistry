@@ -8,6 +8,13 @@
       "when": 1793323409245,
       "tag": "0000_curly_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793347649960,
+      "tag": "0001_square_beyonder",
+      "breakpoints": true
     }
   ]
 }

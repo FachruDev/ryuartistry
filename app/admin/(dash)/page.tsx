@@ -20,10 +20,10 @@ async function countWhere(table: typeof schema.projects | typeof schema.posts) {
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [projects, posts, [openJobs], [newMessages], latest] = await Promise.all([
+  const [projects, posts, [services], [newMessages], latest] = await Promise.all([
     countWhere(schema.projects),
     countWhere(schema.posts),
-    db.select({ value: count() }).from(schema.jobs).where(eq(schema.jobs.isOpen, true)),
+    db.select({ value: count() }).from(schema.services),
     db.select({ value: count() }).from(schema.inquiries).where(eq(schema.inquiries.status, "new")),
     db.select().from(schema.inquiries).orderBy(desc(schema.inquiries.createdAt)).limit(5),
   ]);
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const stats = [
     { label: "Karya terbit", value: projects.published, detail: `${projects.all - projects.published} draf`, href: "/admin/projects" },
     { label: "Catatan Lab terbit", value: posts.published, detail: `${posts.all - posts.published} draf`, href: "/admin/posts" },
-    { label: "Lowongan dibuka", value: openJobs.value, detail: "di halaman Karier", href: "/admin/jobs" },
+    { label: "Layanan", value: services.value, detail: "di halaman Layanan", href: "/admin/services" },
     { label: "Pesan baru", value: newMessages.value, detail: "belum dibaca", href: "/admin/inbox" },
   ];
 

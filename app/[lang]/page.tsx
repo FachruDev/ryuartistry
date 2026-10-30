@@ -37,7 +37,6 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   return (
     <PageTransition>
       <Hero
-        eyebrow={dict.home.eyebrow}
         lead={dict.home.heroLead}
         words={dict.home.heroWords}
         customTitle={customTitle}
