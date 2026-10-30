@@ -10,6 +10,8 @@ async function currentYear() {
   return new Date().getFullYear();
 }
 
+const letterClays = ["var(--lilac)", "var(--peach)", "var(--mint)", "var(--sky)", "var(--butter)"];
+
 export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [settings, year] = await Promise.all([getSettings(), currentYear()]);
   const nav = [
@@ -22,21 +24,24 @@ export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary })
   ];
 
   return (
-    <footer className="overflow-hidden bg-ink-deep text-paper">
-      <div className="mx-auto grid max-w-[1440px] gap-10 px-4 pb-10 pt-20 sm:px-8 md:grid-cols-[2fr_1fr_1fr]">
+    <footer className="relative overflow-hidden rounded-t-[3rem] bg-plum px-4 pt-20 text-milk sm:px-8">
+      <div className="mx-auto grid max-w-[1400px] gap-12 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="max-w-sm">
-          <p className="text-lg leading-snug text-paper/85">{pick(settings?.tagline, lang)}</p>
+          <p className="display-italic text-3xl leading-tight text-milk">{pick(settings?.tagline, lang) || dict.footer.tagline}</p>
           {settings?.contactEmail && (
-            <a href={`mailto:${settings.contactEmail}`} className="mt-4 inline-block text-scale underline-offset-4 hover:underline">
+            <a
+              href={`mailto:${settings.contactEmail}`}
+              className="mt-6 inline-block text-lg font-semibold text-[var(--butter)] underline decoration-[var(--butter)]/40 decoration-2 underline-offset-4 hover:decoration-[var(--butter)]"
+            >
               {settings.contactEmail}
             </a>
           )}
         </div>
         <nav aria-label="Footer">
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {nav.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="text-paper/75 hover:text-scale">
+                <Link href={l.href} className="text-milk/70 transition-colors duration-500 hover:text-milk">
                   {l.label}
                 </Link>
               </li>
@@ -44,10 +49,10 @@ export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary })
           </ul>
         </nav>
         {settings && settings.socials.length > 0 && (
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {settings.socials.map((s) => (
               <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-paper/75 hover:text-scale">
+                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-milk/70 transition-colors duration-500 hover:text-milk">
                   {s.label}
                 </a>
               </li>
@@ -55,14 +60,16 @@ export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary })
           </ul>
         )}
       </div>
-      <p
-        aria-hidden
-        className="display select-none whitespace-nowrap px-2 text-center text-[clamp(4rem,17vw,17rem)] leading-[0.8] text-paper/[0.06]"
-        style={{ ["--wdth" as string]: 75 }}
-      >
-        ryuartistry
+
+      <p aria-hidden className="display mt-20 select-none whitespace-nowrap text-center text-[clamp(4.5rem,18vw,18rem)] leading-[0.78]">
+        {"ryuartistry".split("").map((ch, i) => (
+          <span key={i} style={{ color: letterClays[i % letterClays.length] }}>
+            {ch}
+          </span>
+        ))}
       </p>
-      <div className="mx-auto flex max-w-[1440px] flex-wrap justify-between gap-2 px-4 py-6 text-sm text-paper/55 sm:px-8">
+
+      <div className="mx-auto flex max-w-[1400px] flex-wrap justify-between gap-2 border-t border-milk/10 py-6 text-sm text-milk/55">
         <span>
           © {year} Ryuartistry. {dict.footer.rights}
         </span>

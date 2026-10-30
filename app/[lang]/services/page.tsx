@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { disciplineClay } from "@/lib/clay";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, pick } from "@/lib/i18n";
 import { getServices } from "@/lib/queries";
 import { alternates } from "@/lib/site";
 import { PageIntro } from "@/components/site/page-intro";
+import { PageTransition } from "@/components/site/page-transition";
+import { PillLink } from "@/components/site/pill";
+import { Reveal } from "@/components/site/reveal";
+import { ServiceAccordion } from "@/components/site/service-accordion";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/services">): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.services.title, description: dict.services.intro, alternates: alternates(lang, "/services") };
+  return { title: dict.services.eyebrow, description: dict.services.intro, alternates: alternates(lang, "/services") };
 }
 
 export default async function ServicesPage({ params }: PageProps<"/[lang]/services">) {
@@ -22,31 +26,31 @@ export default async function ServicesPage({ params }: PageProps<"/[lang]/servic
   const disciplineName = Object.fromEntries(dict.disciplines.map((d) => [d.key, d.title]));
 
   return (
-    <>
-      <PageIntro title={dict.services.title} intro={dict.services.intro} />
-      <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8 md:py-28">
+    <PageTransition>
+      <PageIntro eyebrow={dict.services.eyebrow} title={dict.services.title} intro={dict.services.intro} clay="var(--mint)" accent="var(--sky)" />
+      <section className="mx-auto max-w-[1100px] px-4 pb-28 sm:px-8 md:pb-40">
         {services.length === 0 ? (
-          <p className="text-lg text-muted">{dict.services.empty}</p>
+          <p className="text-lg text-plum-soft">{dict.services.empty}</p>
         ) : (
-          <ul className="border-t border-line">
-            {services.map((s) => (
-              <li key={s.id} className="grid gap-4 border-b border-line py-10 md:grid-cols-[1fr_1.1fr] md:gap-16 md:py-14">
-                <div>
-                  {s.icon && disciplineName[s.icon] && <p className="font-semibold text-glow">{disciplineName[s.icon]}</p>}
-                  <h2 className="display mt-2 text-[clamp(2rem,4.5vw,3.75rem)] text-ink [--wdth:90]">{pick(s.title, lang)}</h2>
-                </div>
-                <p className="max-w-[52ch] self-end text-lg leading-relaxed text-text/80">{pick(s.description, lang)}</p>
-              </li>
-            ))}
-          </ul>
+          <Reveal>
+            <ServiceAccordion
+              items={services.map((s) => ({
+                id: s.id,
+                title: pick(s.title, lang),
+                description: pick(s.description, lang),
+                discipline: s.icon ? disciplineName[s.icon] : undefined,
+                clay: disciplineClay[s.icon ?? ""] ?? "var(--butter)",
+              }))}
+            />
+          </Reveal>
         )}
-        <div className="mt-16 flex flex-wrap items-center gap-6">
-          <p className="text-xl font-semibold text-ink">{dict.home.ctaTitle}</p>
-          <Link href={`/${lang}/contact`} className="rounded-full bg-ink px-6 py-3 font-bold text-paper hover:bg-ink-deep">
+        <Reveal className="mt-20 flex flex-wrap items-center justify-between gap-6">
+          <p className="display max-w-[18ch] text-[clamp(1.8rem,3.4vw,3rem)] text-plum">{dict.home.ctaTitle}</p>
+          <PillLink href={`/${lang}/contact`} size="lg">
             {dict.home.ctaSecondary}
-          </Link>
-        </div>
+          </PillLink>
+        </Reveal>
       </section>
-    </>
+    </PageTransition>
   );
 }

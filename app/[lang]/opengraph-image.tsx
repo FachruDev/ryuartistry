@@ -13,6 +13,7 @@ export function generateStaticParams() {
 export default async function OpengraphImage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const dict = getDictionary(isLocale(lang) ? lang : "id");
+  const clays = ["#cdbcff", "#b8ecd8", "#bcdcff", "#ffcdb8"];
   return new ImageResponse(
     (
       <div
@@ -23,16 +24,23 @@ export default async function OpengraphImage({ params }: { params: Promise<{ lan
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 72,
-          background: "#1a1d4e",
-          color: "#edeff6",
+          background: "#f4f1fb",
+          color: "#2a1e3f",
+          position: "relative",
         }}
       >
+        <div style={{ position: "absolute", right: -80, top: -60, width: 520, height: 520, borderRadius: 999, background: "#cdbcff" }} />
+        <div style={{ position: "absolute", right: 300, bottom: -120, width: 320, height: 320, borderRadius: 999, background: "#ffcdb8" }} />
         <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: -1 }}>ryuartistry</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1.02, letterSpacing: -2, maxWidth: 980 }}>
-            {dict.home.heroTitle}
+        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+          <div style={{ fontSize: 84, fontWeight: 700, lineHeight: 1, letterSpacing: -3, maxWidth: 900 }}>
+            {`${dict.home.heroLead} ${dict.home.heroWords[0]} ${dict.home.heroTail}`}
           </div>
-          <div style={{ width: 120, height: 8, background: "#e9b949" }} />
+          <div style={{ display: "flex", gap: 14 }}>
+            {clays.map((c) => (
+              <div key={c} style={{ width: 56, height: 56, borderRadius: 999, background: c }} />
+            ))}
+          </div>
         </div>
       </div>
     ),

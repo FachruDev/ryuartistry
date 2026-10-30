@@ -1,16 +1,17 @@
-import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
-export const bricolage = Bricolage_Grotesque({
+// Display: Fraunces with its SOFT and WONK axes, which round the serifs like pressed clay.
+export const fraunces = Fraunces({
   subsets: ["latin"],
-  axes: ["wdth", "opsz"],
-  variable: "--font-bricolage",
-});
-
-export const instrument = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
+  axes: ["SOFT", "WONK", "opsz"],
   style: ["normal", "italic"],
-  variable: "--font-instrument",
+  variable: "--font-fraunces",
 });
 
-export const fontVariables = `${bricolage.variable} ${instrument.variable}`;
+// Text and UI: Plus Jakarta Sans, designed in Jakarta.
+export const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
+
+export const fontVariables = `${fraunces.variable} ${jakarta.variable}`;

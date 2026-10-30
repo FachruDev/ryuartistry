@@ -6,6 +6,7 @@ import { isLocale } from "@/lib/i18n";
 import { getCategories, getProjects } from "@/lib/queries";
 import { alternates } from "@/lib/site";
 import { PageIntro } from "@/components/site/page-intro";
+import { PageTransition } from "@/components/site/page-transition";
 import { WorkGrid } from "@/components/site/work-grid";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/work">): Promise<Metadata> {
@@ -22,11 +23,18 @@ export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
   const [projects, categories] = await Promise.all([getProjects(), getCategories("project")]);
 
   return (
-    <>
-      <PageIntro title={dict.work.title} intro={dict.work.intro} />
-      <section className="mx-auto max-w-[1440px] px-4 py-20 sm:px-8 md:py-28">
-        <WorkGrid items={projects.map(toWorkCard)} categories={categories} lang={lang} allLabel={dict.work.all} emptyLabel={dict.work.empty} />
+    <PageTransition>
+      <PageIntro eyebrow={dict.work.eyebrow} title={dict.work.title} intro={dict.work.intro} clay="var(--peach)" accent="var(--lilac)" />
+      <section className="mx-auto max-w-[1400px] px-4 pb-28 sm:px-8 md:pb-40">
+        <WorkGrid
+          items={projects.map(toWorkCard)}
+          categories={categories}
+          lang={lang}
+          allLabel={dict.work.all}
+          emptyLabel={dict.work.empty}
+          cursorLabel={dict.cursor.view}
+        />
       </section>
-    </>
+    </PageTransition>
   );
 }
