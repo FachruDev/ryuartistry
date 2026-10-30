@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { ButtonLink, Dotted, Eyebrow, Sparkle } from "./ui";
 
-const tones = ["var(--lilac)", "var(--mint)", "var(--sky)", "var(--peach)"];
+const tones = ["var(--wisteria)", "var(--jade)", "var(--mizu)", "var(--sakura)"];
 const slide = "transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]";
 
 /** The last word of the headline cycles inside a pastel highlight that resizes to fit it. */
@@ -96,16 +96,16 @@ export function Hero({
   return (
     <section className="relative px-4 pb-20 pt-36 text-center sm:px-8 md:pb-28 md:pt-48">
       <motion.div style={{ y: drift[0] }} className="absolute left-[7%] top-[34%] md:left-[14%]">
-        <Sparkle className="size-9 drop-shadow-[0_6px_14px_rgb(31_37_80/0.12)] md:size-14" color="var(--sparkle)" />
+        <Sparkle className="size-9 drop-shadow-[0_6px_14px_rgb(var(--shade)/0.12)] md:size-14" color="var(--sparkle)" />
       </motion.div>
       <motion.div style={{ y: drift[1] }} className="absolute right-[8%] top-[22%] md:right-[17%]">
-        <Sparkle className="size-12 drop-shadow-[0_6px_14px_rgb(31_37_80/0.12)] md:size-16" color="var(--sparkle)" delay={-1.5} />
+        <Sparkle className="size-12 drop-shadow-[0_6px_14px_rgb(var(--shade)/0.12)] md:size-16" color="var(--sparkle)" delay={-1.5} />
       </motion.div>
       <motion.div style={{ y: drift[2] }} className="absolute right-[12%] top-[62%] hidden md:block">
-        <Sparkle className="size-7" color="var(--lilac)" delay={-3} />
+        <Sparkle className="size-7" color="var(--wisteria)" delay={-3} />
       </motion.div>
       <motion.div style={{ y: drift[3] }} className="absolute left-[20%] top-[70%] hidden md:block">
-        <Sparkle className="size-6" color="var(--peach)" delay={-0.8} />
+        <Sparkle className="size-6" color="var(--sakura)" delay={-0.8} />
       </motion.div>
 
       <div className="relative">

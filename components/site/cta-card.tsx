@@ -1,7 +1,7 @@
 import { Reveal } from "./reveal";
 import { ButtonLink, Dotted, Sparkle } from "./ui";
 
-/** Butter-yellow closing card that invites a conversation. */
+/** Yuzu-yellow closing card that invites a conversation. */
 export function CtaCard({
   title,
   body,
@@ -16,10 +16,10 @@ export function CtaCard({
   return (
     <section className="px-4 pt-12 sm:px-8">
       <Reveal className="mx-auto max-w-[1240px]">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-butter px-6 py-20 text-center text-on-pastel md:rounded-[3.5rem] md:py-28">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-yuzu px-6 py-20 text-center text-on-pastel md:rounded-[3.5rem] md:py-28">
           <Sparkle className="absolute left-[9%] top-12 size-10 md:size-14" color="#ffffff" />
           <Sparkle className="absolute bottom-14 right-[10%] size-12 md:size-16" color="#ffffff" delay={-2} />
-          <Sparkle className="absolute right-[24%] top-16 hidden size-6 md:block" color="var(--peach)" delay={-3.5} />
+          <Sparkle className="absolute right-[24%] top-16 hidden size-6 md:block" color="var(--sakura)" delay={-3.5} />
           <h2 className="display relative mx-auto max-w-[14ch] text-[clamp(2.6rem,7vw,5.6rem)]">
             <Dotted text={title} />
           </h2>

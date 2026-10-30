@@ -56,7 +56,7 @@ async function PostDetail({ params }: Pick<PageProps<"/[lang]/lab/[slug]">, "par
 
   const dict = getDictionary(lang);
   const title = pick(post.title, lang);
-  const tone = toneFor(post.category?.slug, "var(--sky)");
+  const tone = toneFor(post.category?.slug, "var(--mizu)");
   const body = renderRichText(post.body[lang] ?? post.body[lang === "id" ? "en" : "id"]);
 
   return (

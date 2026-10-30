@@ -5,7 +5,7 @@ import { motion, useScroll, useSpring } from "motion/react";
 import { Reveal } from "./reveal";
 import { SectionHeading } from "./ui";
 
-const tones = ["var(--lilac)", "var(--mint)", "var(--sky)", "var(--peach)"];
+const tones = ["var(--wisteria)", "var(--jade)", "var(--mizu)", "var(--sakura)"];
 
 /** Numbered steps joined by a line that fills in as the visitor scrolls past. */
 export function ProcessSteps({ title, intro, steps }: { title: string; intro: string; steps: { title: string; body: string }[] }) {

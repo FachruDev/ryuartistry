@@ -31,7 +31,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
         transition={{ duration: 0.7, ease: [0.34, 1.56, 0.64, 1] }}
         className="flex flex-col items-center gap-6 py-10 text-center"
       >
-        <span className="grid size-16 place-items-center rounded-full bg-mint text-on-pastel">
+        <span className="grid size-16 place-items-center rounded-full bg-jade text-on-pastel">
           <Check weight="bold" className="size-7" />
         </span>
         <p className="display max-w-[18ch] text-[clamp(2rem,4vw,3rem)] text-ink">{t.success}</p>
@@ -83,7 +83,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
       </label>
 
       {state.status === "error" && (
-        <p role="alert" className="rounded-2xl bg-peach px-4 py-3 font-medium text-on-pastel">
+        <p role="alert" className="rounded-2xl bg-sakura px-4 py-3 font-medium text-on-pastel">
           {t.error}
         </p>
       )}
@@ -91,7 +91,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
       <button
         type="submit"
         disabled={pending}
-        className="group inline-flex items-center gap-2.5 rounded-full bg-ink px-7 py-4 text-base font-semibold text-paper transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-16px_rgb(31_37_80/0.55)] active:scale-[0.97] disabled:opacity-60"
+        className="group inline-flex items-center gap-2.5 rounded-full bg-ink px-7 py-4 text-base font-semibold text-paper transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-16px_rgb(var(--shade)/0.55)] active:scale-[0.97] disabled:opacity-60"
       >
         {pending ? t.sending : t.submit}
         <ArrowIcon className="size-4 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1" />

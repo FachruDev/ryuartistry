@@ -54,8 +54,8 @@ async function JobDetail({ params }: Pick<PageProps<"/[lang]/careers/[slug]">, "
         <BackLink href={`/${lang}/careers`}>{dict.careers.back}</BackLink>
         <h1 className="display mx-auto mt-8 max-w-[18ch] text-[clamp(2.4rem,6vw,4.8rem)] text-ink">{pick(job.title, lang)}</h1>
         <p className="mt-6 flex flex-wrap justify-center gap-2">
-          <Tag tone="var(--peach)">{job.location}</Tag>
-          <Tag tone="var(--butter)">{job.employmentType}</Tag>
+          <Tag tone="var(--sakura)">{job.location}</Tag>
+          <Tag tone="var(--yuzu)">{job.employmentType}</Tag>
         </p>
       </header>
       <Reveal className="px-4 sm:px-8">

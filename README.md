@@ -45,19 +45,19 @@ Situs saat ini diisi konten contoh supaya desainnya bisa dinilai. Gambarnya dari
 
 ## Arah visual
 
-Sederhana dan ringan: kertas krem hangat, tinta indigo, dan kartu pastel per disiplin. Tidak ada 3D; animasinya hanya hover, reveal saat scroll, dan transisi halaman. Token warna ada di `app/globals.css`, masing-masing punya nilai terang dan gelap.
+Sederhana dan ringan, dengan palet "Naga" (dari *ryu*, naga): kertas beras, tinta biru-hitam, merah stempel, dan kartu pastel per disiplin. Tidak ada 3D; animasinya hanya hover, reveal saat scroll, dan transisi halaman. Token warna ada di `app/globals.css`, masing-masing punya nilai terang dan gelap.
 
 | Token | Terang | Gelap | Dipakai untuk |
 | --- | --- | --- | --- |
-| `paper` | `#f4efe7` | `#131527` | Latar |
-| `ink` | `#1f2550` | `#f4efe7` | Teks dan tombol utama |
-| `muted` | `#5b6182` | `#a7abc6` | Teks pendukung |
-| `accent` | `#f2603a` | `#ff8a62` | Titik di judul dan logo, fokus |
-| `lilac` | `#cfb8f6` | `#b9a2ec` | Disiplin AI |
-| `mint` | `#a9e4cb` | `#8fd3b6` | Disiplin Game |
-| `sky` | `#b8d8fb` | `#9fc4f0` | Disiplin Software |
-| `peach` | `#ffc4a8` | `#f2ac8e` | Disiplin Kreatif |
-| `butter` | `#ffe08f` | `#f0cf74` | CTA |
+| `paper` | `#f3f1ea` | `#0f1724` | Latar |
+| `ink` | `#14213d` | `#f3f1ea` | Teks dan tombol utama |
+| `muted` | `#56627a` | `#a3adbf` | Teks pendukung |
+| `accent` | `#e0442a` | `#ff6a4d` | Titik di judul dan logo, fokus |
+| `wisteria` | `#cbc4f3` | `#b3aae8` | Disiplin AI |
+| `jade` | `#a7dcc4` | `#8fcbb0` | Disiplin Game |
+| `mizu` | `#b9d7f0` | `#9cc1e3` | Disiplin Software |
+| `sakura` | `#f6c6d1` | `#e8adbb` | Disiplin Kreatif |
+| `yuzu` | `#f4df86` | `#e8cf6c` | CTA |
 
 Font: Bricolage Grotesque untuk judul, Plus Jakarta Sans untuk teks.
 

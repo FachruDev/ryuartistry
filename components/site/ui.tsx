@@ -30,7 +30,7 @@ export function Dotted({ text }: { text: string }) {
 }
 
 const buttonVariants = {
-  solid: "bg-ink text-paper hover:shadow-[0_16px_32px_-16px_rgb(31_37_80/0.55)]",
+  solid: "bg-ink text-paper hover:shadow-[0_16px_32px_-16px_rgb(var(--shade)/0.55)]",
   ghost: "bg-paper-raised/60 text-ink ring-1 ring-line hover:bg-paper-raised",
   pastel: "bg-on-pastel text-white",
   soft: "bg-white/45 text-on-pastel hover:bg-white/70",
@@ -93,7 +93,7 @@ export function Tag({ children, tone }: { children: ReactNode; tone: string }) {
 }
 
 /** Four-point sparkle; twinkles via CSS. */
-export function Sparkle({ className = "", color = "var(--butter)", delay = 0 }: { className?: string; color?: string; delay?: number }) {
+export function Sparkle({ className = "", color = "var(--yuzu)", delay = 0 }: { className?: string; color?: string; delay?: number }) {
   return (
     <svg aria-hidden viewBox="0 0 24 24" className={`twinkle ${className}`} style={{ color, animationDelay: `${delay}s` }}>
       <path fill="currentColor" d="M12 0c.5 6.6 5.4 11.5 12 12-6.6.5-11.5 5.4-12 12-.5-6.6-5.4-11.5-12-12C6.6 11.5 11.5 6.6 12 0Z" />

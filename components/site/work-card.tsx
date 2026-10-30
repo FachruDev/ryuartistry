@@ -24,7 +24,7 @@ export function workSlot(index: number, total: number) {
 /** Browser-window frame around a cover image; also the morph source/target for the case-study hero. */
 export function CoverFrame({ slug, src, alt, sizes, priority }: { slug: string; src?: string; alt: string; sizes: string; priority?: boolean }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-t-[1.25rem] bg-frame shadow-[0_24px_50px_-24px_rgb(23_26_51/0.45)]">
+    <div className="flex h-full flex-col overflow-hidden rounded-t-[1.25rem] bg-frame shadow-[0_24px_50px_-24px_rgb(var(--shade)/0.45)]">
       <div aria-hidden className="flex shrink-0 items-center gap-1.5 bg-frame-bar px-4 py-3">
         <span className="size-2.5 rounded-full bg-[#ff6b5f]" />
         <span className="size-2.5 rounded-full bg-[#ffc23d]" />

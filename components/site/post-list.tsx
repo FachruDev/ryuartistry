@@ -12,7 +12,7 @@ export function PostList({ items, lang, minRead }: { items: PostRow[]; lang: Loc
   return (
     <ul className="divide-y divide-line border-y border-line">
       {items.map((p) => {
-        const tone = toneFor(p.category?.slug, "var(--sky)");
+        const tone = toneFor(p.category?.slug, "var(--mizu)");
         return (
           <li key={p.id}>
             <Link href={`/${lang}/lab/${p.slug}`} transitionTypes={["nav-forward"]} className="group grid grid-cols-[auto_1fr] items-center gap-5 py-6 sm:grid-cols-[auto_1fr_auto] md:gap-8 md:py-8">

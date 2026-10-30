@@ -11,7 +11,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 const ease = [0.32, 0.72, 0, 1] as const;
 const glass =
-  "bg-[var(--nav)] ring-1 ring-line/70 backdrop-blur-xl backdrop-saturate-150 shadow-[0_12px_32px_-20px_rgb(31_37_80/0.4)]";
+  "bg-[var(--nav)] ring-1 ring-line/70 backdrop-blur-xl backdrop-saturate-150 shadow-[0_12px_32px_-20px_rgb(var(--shade)/0.4)]";
 const roundButton = `size-11 rounded-full text-ink transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-95 ${glass}`;
 
 export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["nav"]; themeLabel: string }) {
@@ -32,15 +32,18 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const home = `/${lang}`;
   const links = [
+    { href: home, label: nav.home },
     { href: `/${lang}/work`, label: nav.work },
     { href: `/${lang}/lab`, label: nav.lab },
     { href: `/${lang}/services`, label: nav.services },
     { href: `/${lang}/about`, label: nav.about },
     { href: `/${lang}/contact`, label: nav.contact },
   ];
-  const menuLinks = [{ href: `/${lang}`, label: nav.home }, ...links.slice(0, 4), { href: `/${lang}/careers`, label: nav.careers }, links[4]];
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const menuLinks = [...links.slice(0, 5), { href: `/${lang}/careers`, label: nav.careers }, links[5]];
+  // Home only matches itself; every other link also covers its detail pages.
+  const isActive = (href: string) => pathname === href || (href !== home && pathname.startsWith(`${href}/`));
   const current = links.find((l) => isActive(l.href))?.href ?? null;
   const lit = hovered ?? current;
 
@@ -65,13 +68,13 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
                 onMouseEnter={() => setHovered(l.href)}
                 onFocus={() => setHovered(l.href)}
                 onBlur={() => setHovered(null)}
-                className="relative rounded-full px-4 py-2 text-[15px] font-medium text-muted transition-colors duration-300 hover:text-ink aria-[current=page]:text-ink"
+                className="relative rounded-full px-3 py-2 text-[14px] font-medium text-muted transition-colors duration-300 hover:text-ink aria-[current=page]:text-ink lg:px-4 lg:text-[15px]"
               >
                 {lit === l.href && (
                   <motion.span
                     layoutId="nav-highlight"
                     aria-hidden
-                    className="absolute inset-0 rounded-full bg-paper-raised shadow-[0_2px_10px_-4px_rgb(31_37_80/0.25)] ring-1 ring-line"
+                    className="absolute inset-0 rounded-full bg-paper-raised shadow-[0_2px_10px_-4px_rgb(var(--shade)/0.25)] ring-1 ring-line"
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
@@ -126,14 +129,14 @@ export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98 }}
               transition={{ duration: 0.4, ease }}
-              className="fixed inset-x-3 top-[4.5rem] z-40 origin-top rounded-[2rem] bg-paper-raised/95 p-2 shadow-[0_30px_60px_-30px_rgb(31_37_80/0.5)] ring-1 ring-line backdrop-blur-xl md:hidden"
+              className="fixed inset-x-3 top-[4.5rem] z-40 origin-top rounded-[2rem] bg-paper-raised/95 p-2 shadow-[0_30px_60px_-30px_rgb(var(--shade)/0.5)] ring-1 ring-line backdrop-blur-xl md:hidden"
             >
               <ul>
                 {menuLinks.map((l, i) => (
                   <motion.li key={l.href} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.04 + i * 0.04, ease }}>
                     <Link
                       href={l.href}
-                      aria-current={pathname === l.href ? "page" : undefined}
+                      aria-current={isActive(l.href) ? "page" : undefined}
                       className="group display flex items-center justify-between rounded-[1.4rem] px-4 py-3 text-[2rem] text-ink transition-colors aria-[current=page]:bg-paper"
                     >
                       {l.label}

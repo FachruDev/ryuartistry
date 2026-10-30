@@ -13,7 +13,7 @@ export function generateStaticParams() {
 export default async function OpengraphImage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const dict = getDictionary(isLocale(lang) ? lang : "id");
-  const tones = ["#cfb8f6", "#a9e4cb", "#b8d8fb", "#ffc4a8"];
+  const tones = ["#cbc4f3", "#a7dcc4", "#b9d7f0", "#f6c6d1"];
   return new ImageResponse(
     (
       <div
@@ -25,16 +25,16 @@ export default async function OpengraphImage({ params }: { params: Promise<{ lan
           alignItems: "center",
           justifyContent: "center",
           gap: 36,
-          background: "linear-gradient(160deg, #fbefc4 0%, #f4efe7 45%, #e9e2f6 100%)",
-          color: "#1f2550",
+          background: "linear-gradient(160deg, #f7ecc2 0%, #f3f1ea 45%, #e3f1ea 100%)",
+          color: "#14213d",
         }}
       >
         <div style={{ display: "flex", fontSize: 40, fontWeight: 700, letterSpacing: -1.5 }}>
-          ryuartistry<span style={{ color: "#f2603a" }}>.</span>
+          ryuartistry<span style={{ color: "#e0442a" }}>.</span>
         </div>
         <div style={{ display: "flex", fontSize: 104, fontWeight: 700, letterSpacing: -5, lineHeight: 1 }}>
           {`${dict.home.heroLead} ${dict.home.heroWords[0]}`}
-          <span style={{ color: "#f2603a" }}>.</span>
+          <span style={{ color: "#e0442a" }}>.</span>
         </div>
         <div style={{ display: "flex", gap: 14 }}>
           {tones.map((c) => (
