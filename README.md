@@ -14,7 +14,7 @@ Website studio kreatif Ryuartistry (AI, game, software, kreatif) beserta CMS baw
 | Auth | Better Auth (email + password, tanpa pendaftaran publik) |
 | Media | Neon Object Storage (S3), bucket `assets-public` |
 | Editor | Tiptap (disimpan sebagai JSON, dirender di server) |
-| Visual | Tailwind v4, Motion, Lenis, React Three Fiber |
+| Visual | Tailwind v4, Motion, View Transitions |
 
 ## Menjalankan secara lokal
 
@@ -41,23 +41,27 @@ Buka http://localhost:3000 untuk situs dan http://localhost:3000/admin untuk CMS
 
 ## Konten contoh
 
-Situs saat ini diisi konten contoh supaya desainnya bisa dinilai. Gambarnya dari Unsplash (lisensi bebas) dan disimpan di `public/demo`. Jalankan `bun run db:seed-demo --clean` setelah karya asli dimasukkan lewat CMS, lalu hapus folder `public/demo`. Gambar di `public/visuals` dipakai panel disiplin di beranda dan bukan konten contoh.
+Situs saat ini diisi konten contoh supaya desainnya bisa dinilai. Gambarnya dari Unsplash (lisensi bebas) dan disimpan di `public/demo`. Jalankan `bun run db:seed-demo --clean` setelah karya asli dimasukkan lewat CMS, lalu hapus folder `public/demo`.
 
 ## Arah visual
 
-"Ryu's clay studio": dunia tanah liat pastel. Token warna ada di `app/globals.css`.
+Sederhana dan ringan: kertas krem hangat, tinta indigo, dan kartu pastel per disiplin. Tidak ada 3D; animasinya hanya hover, reveal saat scroll, dan transisi halaman. Token warna ada di `app/globals.css`, masing-masing punya nilai terang dan gelap.
 
-| Token | Warna | Dipakai untuk |
-| --- | --- | --- |
-| `milk` | `#f4f1fb` | Latar |
-| `plum` | `#2a1e3f` | Teks, tombol utama, footer |
-| `lilac` | `#cdbcff` | Disiplin AI |
-| `mint` | `#b8ecd8` | Disiplin Game |
-| `sky` | `#bcdcff` | Disiplin Software |
-| `peach` | `#ffcdb8` | Disiplin Kreatif |
-| `butter` | `#ffe8a3` | Aksen dan CTA |
+| Token | Terang | Gelap | Dipakai untuk |
+| --- | --- | --- | --- |
+| `paper` | `#f4efe7` | `#131527` | Latar |
+| `ink` | `#1f2550` | `#f4efe7` | Teks dan tombol utama |
+| `muted` | `#5b6182` | `#a7abc6` | Teks pendukung |
+| `accent` | `#f2603a` | `#ff8a62` | Titik di judul dan logo, fokus |
+| `lilac` | `#cfb8f6` | `#b9a2ec` | Disiplin AI |
+| `mint` | `#a9e4cb` | `#8fd3b6` | Disiplin Game |
+| `sky` | `#b8d8fb` | `#9fc4f0` | Disiplin Software |
+| `peach` | `#ffc4a8` | `#f2ac8e` | Disiplin Kreatif |
+| `butter` | `#ffe08f` | `#f0cf74` | CTA |
 
-Font: Fraunces (sumbu SOFT dan WONK) untuk judul, Plus Jakarta Sans untuk teks. Utilitas CSS: `.clay` (claymorphism), `.bezel` dan `.bezel-core` (bingkai ganda), `.morph-blob`, `.marquee-track`, dan `.skeleton`.
+Font: Bricolage Grotesque untuk judul, Plus Jakarta Sans untuk teks.
+
+Tema mengikuti sistem sampai pengunjung memilih lewat tombol di navigasi atau footer; pilihannya disimpan di `localStorage`. Skrip kecil di `<head>` (`lib/theme.ts`) memasang `data-theme` sebelum halaman tampil, jadi tidak ada kedipan. Gunakan varian Tailwind `dark:` untuk gaya khusus mode gelap. CMS selalu memakai tema terang.
 
 ## Struktur
 
@@ -68,7 +72,7 @@ app/api/           handler Better Auth dan upload media
 lib/db/schema.ts   skema database (teks dua bahasa disimpan sebagai { id, en })
 lib/queries.ts     query publik dengan "use cache" + cacheTag
 lib/actions/       Server Actions CMS; setiap simpan memanggil updateTag
-components/site/   komponen situs (hero clay 3D, marquee, scrollytelling, panel horizontal, dsb.)
+components/site/   komponen situs (navigasi, hero, kartu karya, toggle tema, dsb.)
 components/admin/  komponen CMS (editor, media picker, form)
 ```
 

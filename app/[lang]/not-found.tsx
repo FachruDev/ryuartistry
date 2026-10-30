@@ -1,21 +1,31 @@
 import Link from "next/link";
+import { Sparkle } from "@/components/site/ui";
 
 // Rendered inside the [lang] layout, which has already validated the locale.
 export default function NotFound() {
   return (
-    <section className="relative isolate flex min-h-[90dvh] items-center overflow-hidden px-4 pb-20 pt-36 sm:px-8">
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 grid place-items-center">
-        <div className="clay morph-blob size-[min(70vw,520px)] opacity-90" style={{ ["--clay" as string]: "var(--lilac)" }} />
-      </div>
-      <div className="mx-auto w-full max-w-[1400px] text-center">
-        <p className="display text-[clamp(7rem,26vw,22rem)] leading-none text-plum">404</p>
-        <h1 className="display-italic mt-2 text-3xl text-plum">Halaman ini belum dibentuk.</h1>
-        <p lang="en" className="mt-1 text-lg text-plum-soft">This page hasn&apos;t been shaped yet.</p>
+    <section className="relative flex min-h-[86dvh] items-center px-4 pb-16 pt-36 text-center sm:px-8">
+      <Sparkle className="absolute left-[12%] top-[30%] size-12 md:size-16" color="var(--sparkle)" />
+      <Sparkle className="absolute bottom-[22%] right-[14%] size-10 md:size-14" color="var(--lilac)" delay={-2} />
+      <div className="mx-auto w-full max-w-3xl">
+        <p className="display text-[clamp(7rem,28vw,18rem)] leading-none text-ink">
+          404<span className="text-accent">.</span>
+        </p>
+        <h1 className="display mt-4 text-[clamp(1.8rem,4vw,2.8rem)] text-ink">Halaman ini tidak ditemukan.</h1>
+        <p lang="en" className="mt-2 text-lg text-muted">
+          This page couldn&apos;t be found.
+        </p>
         <div className="mt-10 flex justify-center gap-3">
-          <Link href="/id" className="rounded-full bg-plum px-6 py-3 font-semibold text-milk transition-transform duration-500 hover:-translate-y-0.5">
+          <Link
+            href="/id"
+            className="rounded-full bg-ink px-6 py-3.5 font-semibold text-paper transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5"
+          >
             Beranda
           </Link>
-          <Link href="/en" className="rounded-full px-6 py-3 font-semibold text-plum ring-1 ring-plum/15 hover:bg-plum/[0.05]">
+          <Link
+            href="/en"
+            className="rounded-full bg-paper-raised/60 px-6 py-3.5 font-semibold text-ink ring-1 ring-line transition-[transform,background-color] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 hover:bg-paper-raised"
+          >
             Home
           </Link>
         </div>

@@ -25,13 +25,13 @@ export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.lab.eyebrow} title={dict.lab.title} intro={dict.lab.intro} clay="var(--sky)" accent="var(--mint)" />
-      <section className="mx-auto max-w-[1400px] px-4 pb-28 sm:px-8 md:pb-40">
+      <PageIntro eyebrow={dict.lab.eyebrow} title={dict.lab.title} intro={dict.lab.intro} />
+      <section className="mx-auto max-w-[980px] px-4 sm:px-8">
         {posts.length === 0 ? (
-          <p className="text-lg text-plum-soft">{dict.lab.empty}</p>
+          <p className="text-center text-lg text-muted">{dict.lab.empty}</p>
         ) : (
           <Reveal>
-            <PostList items={posts.map(toPostRow)} lang={lang} minRead={dict.lab.minRead} cursorLabel={dict.cursor.read} />
+            <PostList items={posts.map(toPostRow)} lang={lang} minRead={dict.lab.minRead} />
           </Reveal>
         )}
       </section>

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { disciplineClay } from "@/lib/clay";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, pick } from "@/lib/i18n";
 import { getServices } from "@/lib/queries";
 import { alternates } from "@/lib/site";
+import { toneFor } from "@/lib/tones";
+import { CtaCard } from "@/components/site/cta-card";
 import { PageIntro } from "@/components/site/page-intro";
 import { PageTransition } from "@/components/site/page-transition";
-import { PillLink } from "@/components/site/pill";
 import { Reveal } from "@/components/site/reveal";
 import { ServiceAccordion } from "@/components/site/service-accordion";
 
@@ -27,10 +27,10 @@ export default async function ServicesPage({ params }: PageProps<"/[lang]/servic
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.services.eyebrow} title={dict.services.title} intro={dict.services.intro} clay="var(--mint)" accent="var(--sky)" />
-      <section className="mx-auto max-w-[1100px] px-4 pb-28 sm:px-8 md:pb-40">
+      <PageIntro eyebrow={dict.services.eyebrow} title={dict.services.title} intro={dict.services.intro} />
+      <section className="mx-auto max-w-[1000px] px-4 pb-12 sm:px-8">
         {services.length === 0 ? (
-          <p className="text-lg text-plum-soft">{dict.services.empty}</p>
+          <p className="text-center text-lg text-muted">{dict.services.empty}</p>
         ) : (
           <Reveal>
             <ServiceAccordion
@@ -39,18 +39,13 @@ export default async function ServicesPage({ params }: PageProps<"/[lang]/servic
                 title: pick(s.title, lang),
                 description: pick(s.description, lang),
                 discipline: s.icon ? disciplineName[s.icon] : undefined,
-                clay: disciplineClay[s.icon ?? ""] ?? "var(--butter)",
+                tone: toneFor(s.icon),
               }))}
             />
           </Reveal>
         )}
-        <Reveal className="mt-20 flex flex-wrap items-center justify-between gap-6">
-          <p className="display max-w-[18ch] text-[clamp(1.8rem,3.4vw,3rem)] text-plum">{dict.home.ctaTitle}</p>
-          <PillLink href={`/${lang}/contact`} size="lg">
-            {dict.home.ctaSecondary}
-          </PillLink>
-        </Reveal>
       </section>
+      <CtaCard title={dict.home.ctaTitle} body={dict.home.ctaBody} primary={{ href: `/${lang}/contact?type=project`, label: dict.home.ctaSecondary }} />
     </PageTransition>
   );
 }

@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
-import { ArrowLeft } from "@phosphor-icons/react/ssr";
-import { disciplineClay } from "@/lib/clay";
 import { getDictionary } from "@/lib/dictionaries";
 import { formatDate, isLocale, pick } from "@/lib/i18n";
 import { getPostBySlug, getPublishedSlugs } from "@/lib/queries";
 import { renderRichText } from "@/lib/render";
 import { alternates } from "@/lib/site";
+import { toneFor } from "@/lib/tones";
 import { Reveal } from "@/components/site/reveal";
 import { DetailSkeleton } from "@/components/site/skeletons";
+import { BackLink, Tag } from "@/components/site/ui";
 
 const PLACEHOLDER = "__none__";
 
@@ -57,52 +56,40 @@ async function PostDetail({ params }: Pick<PageProps<"/[lang]/lab/[slug]">, "par
 
   const dict = getDictionary(lang);
   const title = pick(post.title, lang);
-  const clay = disciplineClay[post.category?.slug ?? ""] ?? "var(--sky)";
+  const tone = toneFor(post.category?.slug, "var(--sky)");
   const body = renderRichText(post.body[lang] ?? post.body[lang === "id" ? "en" : "id"]);
 
   return (
     <article>
-      <header className="relative isolate overflow-hidden px-4 pb-14 pt-36 sm:px-8 md:pt-44">
-        <div aria-hidden className="morph-blob pointer-events-none absolute -right-24 -top-16 -z-10 size-[28rem] opacity-50 blur-3xl" style={{ background: clay }} />
-        <div className="mx-auto max-w-[66ch]">
-          <Link
-            href={`/${lang}/lab`}
-            transitionTypes={["nav-back"]}
-            className="group inline-flex items-center gap-2 rounded-full bg-cloud/80 py-1.5 pl-1.5 pr-4 text-sm font-semibold text-plum ring-1 ring-plum/[0.07]"
-          >
-            <span className="grid size-7 place-items-center rounded-full bg-plum text-milk transition-transform duration-500 group-hover:-translate-x-0.5">
-              <ArrowLeft weight="light" className="size-3.5" />
-            </span>
-            {dict.lab.back}
-          </Link>
-          <div className="mt-8 flex flex-wrap items-center gap-3 text-sm font-medium text-plum-soft">
-            {post.category && (
-              <span className="clay rounded-full px-3 py-1 text-xs font-bold text-plum" style={{ ["--clay" as string]: clay }}>
-                {pick(post.category.name, lang)}
-              </span>
-            )}
-            <time dateTime={post.publishedAt?.toISOString()}>{formatDate(post.publishedAt, lang)}</time>
-            <span>
-              {post.readingTime} {dict.lab.minRead}
-            </span>
-            {post.author?.name && <span>{post.author.name}</span>}
-          </div>
-          <h1 className="display mt-6 text-[clamp(2.4rem,5.6vw,4.6rem)] text-plum">{title}</h1>
-          {pick(post.excerpt, lang) && <p className="mt-6 text-xl leading-relaxed text-plum-soft">{pick(post.excerpt, lang)}</p>}
+      <header className="px-4 pb-12 pt-32 text-center sm:px-8 md:pb-16 md:pt-44">
+        <BackLink href={`/${lang}/lab`}>{dict.lab.back}</BackLink>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
+          {post.category && <Tag tone={tone}>{pick(post.category.name, lang)}</Tag>}
+          <time dateTime={post.publishedAt?.toISOString()}>{formatDate(post.publishedAt, lang)}</time>
+          <span aria-hidden>·</span>
+          <span>
+            {post.readingTime} {dict.lab.minRead}
+          </span>
+          {post.author?.name && (
+            <>
+              <span aria-hidden>·</span>
+              <span>{post.author.name}</span>
+            </>
+          )}
         </div>
+        <h1 className="display mx-auto mt-6 max-w-[18ch] text-[clamp(2.4rem,6vw,4.8rem)] text-ink">{title}</h1>
+        {pick(post.excerpt, lang) && <p className="mx-auto mt-6 max-w-[56ch] text-lg leading-relaxed text-muted sm:text-xl">{pick(post.excerpt, lang)}</p>}
       </header>
 
       {post.cover && (
         <Reveal className="mx-auto max-w-[1100px] px-4 sm:px-8">
-          <div className="bezel">
-            <div className="bezel-core relative aspect-[16/9]">
-              <Image src={post.cover.url} alt={pick(post.cover.alt, lang) || title} fill priority sizes="(min-width: 1100px) 1100px, 100vw" className="object-cover" />
-            </div>
+          <div className="relative aspect-[16/9] overflow-hidden rounded-[2rem] md:rounded-[3rem]" style={{ background: tone }}>
+            <Image src={post.cover.url} alt={pick(post.cover.alt, lang) || title} fill priority sizes="(min-width: 1100px) 1100px, 100vw" className="object-cover" />
           </div>
         </Reveal>
       )}
 
-      <Reveal className="px-4 py-20 sm:px-8 md:py-24">
+      <Reveal className="px-4 pt-16 sm:px-8 md:pt-24">
         <div className="prose-ryu mx-auto" dangerouslySetInnerHTML={{ __html: body }} />
       </Reveal>
     </article>

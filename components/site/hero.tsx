@@ -1,75 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "motion/react";
-import { ArrowDown, ArrowUpRight } from "@phosphor-icons/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { ButtonLink, Dotted, Eyebrow, Sparkle } from "./ui";
 
-const ClayScene = dynamic(() => import("./clay-scene"), { ssr: false });
+const tones = ["var(--lilac)", "var(--mint)", "var(--sky)", "var(--peach)"];
+const slide = "transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]";
 
-const ease = [0.32, 0.72, 0, 1] as const;
-const wordClays = ["var(--lilac)", "var(--mint)", "var(--sky)", "var(--peach)"];
-
-let webgl: boolean | undefined;
-function canUseWebGL() {
-  if (webgl === undefined) {
-    try {
-      const canvas = document.createElement("canvas");
-      webgl = Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
-    } catch {
-      webgl = false;
-    }
-  }
-  return webgl;
-}
-const noopSubscribe = () => () => {};
-
-/** Pastel clay lumps drawn in CSS: shown while WebGL loads and instead of it for reduced motion. */
-function StaticClay() {
-  return (
-    <div aria-hidden className="absolute inset-0 grid place-items-center">
-      <div className="clay morph-blob size-[58%] max-w-[420px]" style={{ ["--clay" as string]: "var(--lilac)", borderRadius: "48% 52% 60% 40% / 45% 45% 55% 55%" }} />
-      <div className="clay absolute right-[14%] top-[16%] size-16 rounded-full" style={{ ["--clay" as string]: "var(--peach)" }} />
-      <div className="clay absolute bottom-[18%] left-[12%] h-10 w-24 rounded-full" style={{ ["--clay" as string]: "var(--mint)" }} />
-      <div className="clay absolute left-[18%] top-[20%] size-12 rounded-2xl" style={{ ["--clay" as string]: "var(--sky)" }} />
-    </div>
-  );
-}
-
-export function Hero({
-  eyebrow,
-  lead,
-  words,
-  tail,
-  subtitle,
-  primary,
-  secondary,
-  scrollLabel,
-  nowShaping,
-}: {
-  eyebrow: string;
-  lead: string;
-  words: string[];
-  tail: string;
-  subtitle: string;
-  primary: { href: string; label: string };
-  secondary: { href: string; label: string };
-  scrollLabel: string;
-  nowShaping: string;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  const progress = useRef(0);
-  const reduced = useReducedMotion();
-  const hasWebGL = useSyncExternalStore(noopSubscribe, canUseWebGL, () => false);
+/** The last word of the headline cycles inside a pastel highlight that resizes to fit it. */
+function RotatingWord({ words }: { words: string[] }) {
   const [index, setIndex] = useState(0);
+  const [widths, setWidths] = useState<number[]>([]);
+  const sizers = useRef<(HTMLSpanElement | null)[]>([]);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     if (reduced || words.length < 2) return;
@@ -77,144 +20,144 @@ export function Hero({
     return () => window.clearInterval(id);
   }, [reduced, words.length]);
 
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  useMotionValueEvent(scrollYProgress, "change", (v) => (progress.current = v));
-  const textY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -160]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.65], [1, reduced ? 1 : 0]);
-  const stageScale = useTransform(scrollYProgress, [0, 1], [1, reduced ? 1 : 1.18]);
-  const stageY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 120]);
+  // Measure every word once fonts settle and whenever the headline resizes.
+  useEffect(() => {
+    const els = sizers.current.filter((el): el is HTMLSpanElement => el !== null);
+    const observer = new ResizeObserver(() => setWidths(els.map((el) => el.offsetWidth)));
+    els.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [words]);
+
+  const known = widths.length === words.length && widths.every((w) => w > 0);
+  const prev = (index - 1 + words.length) % words.length;
 
   return (
-    <section ref={ref} className="relative isolate min-h-[100dvh] overflow-hidden">
-      {/* Soft pastel weather behind everything. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="morph-blob absolute -left-32 top-20 size-[38rem] bg-[var(--lilac)] opacity-50 blur-3xl" />
-        <div className="morph-blob absolute -right-40 top-[30%] size-[34rem] bg-[var(--peach)] opacity-45 blur-3xl [animation-delay:-3s]" />
-        <div className="morph-blob absolute bottom-[-12rem] left-[35%] size-[30rem] bg-[var(--mint)] opacity-45 blur-3xl [animation-delay:-6s]" />
-      </div>
-
-      <div className="mx-auto grid min-h-[100dvh] max-w-[1400px] grid-rows-[minmax(42vh,1fr)_auto] gap-6 px-4 pb-10 pt-24 sm:px-8 lg:grid-cols-[1.08fr_1fr] lg:grid-rows-1 lg:items-center lg:gap-4 lg:pb-16 lg:pt-28">
-        {/* 3D stage: first on mobile, right column on desktop. */}
-        <motion.div style={{ scale: stageScale, y: stageY }} className="relative order-first h-full min-h-[42vh] lg:order-last lg:h-[78vh]">
-          {hasWebGL && !reduced ? <ClayScene progress={progress} colorIndex={index} /> : <StaticClay />}
-          {words.length > 0 && <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.9, ease }}
-            className="bezel absolute bottom-4 right-2 hidden w-60 sm:block lg:bottom-16 lg:right-6"
+    <>
+      {words.map((w, i) => (
+        <span
+          key={w}
+          ref={(el) => {
+            sizers.current[i] = el;
+          }}
+          aria-hidden
+          className="invisible absolute left-0 top-0 whitespace-nowrap px-[0.14em]"
+        >
+          {w}
+        </span>
+      ))}
+      <span
+        aria-hidden
+        className="relative inline-block h-[1.08em] overflow-hidden rounded-[0.24em] align-[-0.16em] text-on-pastel transition-[width,background-color] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
+        style={{ width: known ? widths[index] : undefined, backgroundColor: tones[index % tones.length] }}
+      >
+        {!known && <span className="invisible inline-block whitespace-nowrap px-[0.14em] leading-[1.08em]">{words[0]}</span>}
+        {words.map((w, i) => (
+          <span
+            key={w}
+            className={`absolute inset-0 grid place-items-center whitespace-nowrap leading-none ${slide}`}
+            style={{
+              transform: `translateY(${i === index ? 0 : i === prev ? -105 : 105}%)`,
+              opacity: i === index ? 1 : 0,
+            }}
           >
-            <div className="bezel-core bg-cloud/90 p-4">
-              <p className="text-xs font-semibold text-plum-soft">{nowShaping}</p>
-              <div className="mt-2 flex items-center gap-3">
-                <motion.span
-                  className="clay block size-8 rounded-full"
-                  animate={{ ["--clay" as string]: wordClays[index % wordClays.length] }}
-                  transition={{ duration: 0.8, ease }}
-                />
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={index}
-                    initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
-                    transition={{ duration: 0.5, ease }}
-                    className="display text-2xl text-plum"
-                  >
-                    {words[index]}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-            </div>
-          </motion.div>}
+            {w}
+          </span>
+        ))}
+      </span>
+    </>
+  );
+}
+
+export function Hero({
+  eyebrow,
+  lead,
+  words,
+  customTitle,
+  subtitle,
+  primary,
+  secondary,
+}: {
+  eyebrow: string;
+  lead: string;
+  words: string[];
+  customTitle?: string;
+  subtitle: string;
+  primary: { href: string; label: string };
+  secondary: { href: string; label: string };
+}) {
+  const { scrollY } = useScroll();
+  const drift = [
+    useTransform(scrollY, [0, 700], [0, -140]),
+    useTransform(scrollY, [0, 700], [0, -60]),
+    useTransform(scrollY, [0, 700], [0, -200]),
+    useTransform(scrollY, [0, 700], [0, -90]),
+  ];
+
+  return (
+    <section className="relative px-4 pb-20 pt-36 text-center sm:px-8 md:pb-28 md:pt-48">
+      <motion.div style={{ y: drift[0] }} className="absolute left-[7%] top-[34%] md:left-[14%]">
+        <Sparkle className="size-9 drop-shadow-[0_6px_14px_rgb(31_37_80/0.12)] md:size-14" color="var(--sparkle)" />
+      </motion.div>
+      <motion.div style={{ y: drift[1] }} className="absolute right-[8%] top-[22%] md:right-[17%]">
+        <Sparkle className="size-12 drop-shadow-[0_6px_14px_rgb(31_37_80/0.12)] md:size-16" color="var(--sparkle)" delay={-1.5} />
+      </motion.div>
+      <motion.div style={{ y: drift[2] }} className="absolute right-[12%] top-[62%] hidden md:block">
+        <Sparkle className="size-7" color="var(--lilac)" delay={-3} />
+      </motion.div>
+      <motion.div style={{ y: drift[3] }} className="absolute left-[20%] top-[70%] hidden md:block">
+        <Sparkle className="size-6" color="var(--peach)" delay={-0.8} />
+      </motion.div>
+
+      <div className="relative">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}>
+          <Eyebrow>{eyebrow}</Eyebrow>
         </motion.div>
 
-        <motion.div style={{ y: textY, opacity: textOpacity }} className="relative z-10">
-          <motion.span
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease }}
-            className="inline-flex items-center gap-2 rounded-full bg-cloud/80 px-3 py-1 text-xs font-semibold tracking-[0.04em] text-plum-soft ring-1 ring-plum/[0.07]"
-          >
-            <span aria-hidden className="size-2 rounded-full bg-[var(--berry)]" />
-            {eyebrow}
-          </motion.span>
-
-          <h1 className="display mt-6 text-[clamp(3.1rem,7.6vw,7.4rem)] text-plum">
-            <motion.span
-              className="block"
-              initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 1.1, ease }}
-            >
-              {lead}
-            </motion.span>
-            {words.length > 0 && <motion.span
-              className="my-2 inline-flex"
-              initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 1.1, delay: 0.12, ease }}
-            >
-              <motion.span
-                layout
-                transition={{ layout: { duration: 0.7, ease } }}
-                className="clay relative inline-flex overflow-hidden rounded-[0.9em] px-[0.32em] pb-[0.12em] pt-[0.02em]"
-                animate={{ ["--clay" as string]: wordClays[index % wordClays.length] }}
-              >
-                <AnimatePresence mode="popLayout" initial={false}>
-                  <motion.span
-                    key={index}
-                    initial={{ y: "70%", opacity: 0, filter: "blur(12px)", scale: 0.9 }}
-                    animate={{ y: "0%", opacity: 1, filter: "blur(0px)", scale: 1 }}
-                    exit={{ y: "-70%", opacity: 0, filter: "blur(12px)", scale: 1.05 }}
-                    transition={{ duration: 0.7, ease }}
-                    className="display-italic inline-block"
-                  >
-                    {words[index]}
-                  </motion.span>
-                </AnimatePresence>
-              </motion.span>
-            </motion.span>}
-            <motion.span
-              className="block"
-              initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ duration: 1.1, delay: 0.24, ease }}
-            >
-              {tail}
-            </motion.span>
-          </h1>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.45, ease }}
-          >
-            <p className="mt-8 max-w-[44ch] text-lg leading-relaxed text-plum-soft sm:text-xl">{subtitle}</p>
-            <div className="mt-10 flex flex-wrap items-center gap-3">
-              <Link
-                href={primary.href}
-                className="group inline-flex items-center gap-4 rounded-full bg-plum py-2 pl-6 pr-2 text-[15px] font-semibold text-milk transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-0.5 active:scale-[0.98]"
-              >
-                {primary.label}
-                <span className="grid size-10 place-items-center rounded-full bg-[var(--butter)] text-plum transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-px group-hover:translate-x-0.5 group-hover:scale-105">
-                  <ArrowUpRight weight="light" className="size-5" />
-                </span>
-              </Link>
-              <Link
-                href={secondary.href}
-                className="rounded-full px-5 py-3.5 text-[15px] font-semibold text-plum ring-1 ring-plum/15 transition-colors duration-500 hover:bg-plum/[0.05]"
-              >
-                {secondary.label}
-              </Link>
-            </div>
-          </motion.div>
-
-          <p className="mt-14 hidden items-center gap-3 text-sm font-medium text-plum-soft lg:flex" aria-hidden>
-            <span className="grid size-9 place-items-center rounded-full ring-1 ring-plum/15">
-              <ArrowDown weight="light" className="size-4 animate-bounce" />
+        <motion.h1
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.08, ease: [0.32, 0.72, 0, 1] }}
+          className="display relative mx-auto mt-7 text-[clamp(3.3rem,10.5vw,8.4rem)] text-ink"
+        >
+          {customTitle ? (
+            <span className="mx-auto block max-w-[13ch]">
+              <Dotted text={customTitle} />
             </span>
-            {scrollLabel}
-          </p>
+          ) : (
+            <>
+              <span className="sr-only">
+                {lead} {words.join(", ")}.
+              </span>
+              <span aria-hidden className="block">
+                {lead}
+              </span>
+              <span aria-hidden className="relative inline-block whitespace-nowrap">
+                <RotatingWord words={words} />
+                <span className="text-accent">.</span>
+              </span>
+            </>
+          )}
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.18, ease: [0.32, 0.72, 0, 1] }}
+          className="mx-auto mt-8 max-w-[50ch] text-lg leading-relaxed text-muted sm:text-xl"
+        >
+          {subtitle}
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.26, ease: [0.32, 0.72, 0, 1] }}
+          className="mt-10 flex flex-wrap justify-center gap-3"
+        >
+          <ButtonLink href={primary.href}>{primary.label}</ButtonLink>
+          <ButtonLink href={secondary.href} variant="ghost">
+            {secondary.label}
+          </ButtonLink>
         </motion.div>
       </div>
     </section>

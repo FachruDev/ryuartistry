@@ -13,7 +13,7 @@ export function generateStaticParams() {
 export default async function OpengraphImage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const dict = getDictionary(isLocale(lang) ? lang : "id");
-  const clays = ["#cdbcff", "#b8ecd8", "#bcdcff", "#ffcdb8"];
+  const tones = ["#cfb8f6", "#a9e4cb", "#b8d8fb", "#ffc4a8"];
   return new ImageResponse(
     (
       <div
@@ -22,25 +22,24 @@ export default async function OpengraphImage({ params }: { params: Promise<{ lan
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          padding: 72,
-          background: "#f4f1fb",
-          color: "#2a1e3f",
-          position: "relative",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 36,
+          background: "linear-gradient(160deg, #fbefc4 0%, #f4efe7 45%, #e9e2f6 100%)",
+          color: "#1f2550",
         }}
       >
-        <div style={{ position: "absolute", right: -80, top: -60, width: 520, height: 520, borderRadius: 999, background: "#cdbcff" }} />
-        <div style={{ position: "absolute", right: 300, bottom: -120, width: 320, height: 320, borderRadius: 999, background: "#ffcdb8" }} />
-        <div style={{ fontSize: 44, fontWeight: 700, letterSpacing: -1 }}>ryuartistry</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          <div style={{ fontSize: 84, fontWeight: 700, lineHeight: 1, letterSpacing: -3, maxWidth: 900 }}>
-            {`${dict.home.heroLead} ${dict.home.heroWords[0]} ${dict.home.heroTail}`}
-          </div>
-          <div style={{ display: "flex", gap: 14 }}>
-            {clays.map((c) => (
-              <div key={c} style={{ width: 56, height: 56, borderRadius: 999, background: c }} />
-            ))}
-          </div>
+        <div style={{ display: "flex", fontSize: 40, fontWeight: 700, letterSpacing: -1.5 }}>
+          ryuartistry<span style={{ color: "#f2603a" }}>.</span>
+        </div>
+        <div style={{ display: "flex", fontSize: 104, fontWeight: 700, letterSpacing: -5, lineHeight: 1 }}>
+          {`${dict.home.heroLead} ${dict.home.heroWords[0]}`}
+          <span style={{ color: "#f2603a" }}>.</span>
+        </div>
+        <div style={{ display: "flex", gap: 14 }}>
+          {tones.map((c) => (
+            <div key={c} style={{ width: 120, height: 44, borderRadius: 999, background: c }} />
+          ))}
         </div>
       </div>
     ),

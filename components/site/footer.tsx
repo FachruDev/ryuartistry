@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import type { Dictionary } from "@/lib/dictionaries";
 import { pick, type Locale } from "@/lib/i18n";
 import { getSettings } from "@/lib/queries";
+import { ThemeSwitch } from "./theme-toggle";
 
 async function currentYear() {
   "use cache";
@@ -10,7 +11,8 @@ async function currentYear() {
   return new Date().getFullYear();
 }
 
-const letterClays = ["var(--lilac)", "var(--peach)", "var(--mint)", "var(--sky)", "var(--butter)"];
+const heading = "text-sm font-semibold text-ink";
+const item = "link-grow text-muted hover:text-ink";
 
 export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [settings, year] = await Promise.all([getSettings(), currentYear()]);
@@ -20,60 +22,74 @@ export async function Footer({ lang, dict }: { lang: Locale; dict: Dictionary })
     { href: `/${lang}/services`, label: dict.nav.services },
     { href: `/${lang}/about`, label: dict.nav.about },
     { href: `/${lang}/careers`, label: dict.nav.careers },
-    { href: `/${lang}/contact`, label: dict.nav.contact },
   ];
 
   return (
-    <footer className="relative overflow-hidden rounded-t-[3rem] bg-plum px-4 pt-20 text-milk sm:px-8">
-      <div className="mx-auto grid max-w-[1400px] gap-12 md:grid-cols-[1.5fr_1fr_1fr]">
-        <div className="max-w-sm">
-          <p className="display-italic text-3xl leading-tight text-milk">{pick(settings?.tagline, lang) || dict.footer.tagline}</p>
-          {settings?.contactEmail && (
-            <a
-              href={`mailto:${settings.contactEmail}`}
-              className="mt-6 inline-block text-lg font-semibold text-[var(--butter)] underline decoration-[var(--butter)]/40 decoration-2 underline-offset-4 hover:decoration-[var(--butter)]"
-            >
-              {settings.contactEmail}
-            </a>
-          )}
+    <footer className="px-4 pb-10 pt-24 sm:px-8 md:pt-32">
+      <div className="mx-auto max-w-[1240px]">
+        <div className="flex flex-col gap-12 border-t border-line pt-14 lg:flex-row lg:justify-between">
+          <div>
+            <Link href={`/${lang}`} className="display text-[2rem] text-ink">
+              ryuartistry<span className="text-accent">.</span>
+            </Link>
+            <p className="mt-4 max-w-[30ch] leading-relaxed text-muted">{pick(settings?.tagline, lang) || dict.footer.tagline}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-10 sm:flex sm:gap-16 lg:gap-20">
+            <nav aria-label={dict.footer.explore}>
+              <p className={heading}>{dict.footer.explore}</p>
+              <ul className="mt-4 space-y-3">
+                {nav.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className={item}>
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {settings && settings.socials.length > 0 && (
+              <div>
+                <p className={heading}>{dict.footer.elsewhere}</p>
+                <ul className="mt-4 space-y-3">
+                  {settings.socials.map((s) => (
+                    <li key={s.url}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className={item}>
+                        {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div>
+              <p className={heading}>{dict.footer.contact}</p>
+              <ul className="mt-4 space-y-3">
+                <li>
+                  <Link href={`/${lang}/contact`} className={item}>
+                    {dict.nav.contact}
+                  </Link>
+                </li>
+                {settings?.contactEmail && (
+                  <li>
+                    <a href={`mailto:${settings.contactEmail}`} className={`${item} break-words`}>
+                      {settings.contactEmail}
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
-        <nav aria-label="Footer">
-          <ul className="space-y-2.5">
-            {nav.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="text-milk/70 transition-colors duration-500 hover:text-milk">
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        {settings && settings.socials.length > 0 && (
-          <ul className="space-y-2.5">
-            {settings.socials.map((s) => (
-              <li key={s.url}>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-milk/70 transition-colors duration-500 hover:text-milk">
-                  {s.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
-      <p aria-hidden className="display mt-20 select-none whitespace-nowrap text-center text-[clamp(4.5rem,18vw,18rem)] leading-[0.78]">
-        {"ryuartistry".split("").map((ch, i) => (
-          <span key={i} style={{ color: letterClays[i % letterClays.length] }}>
-            {ch}
-          </span>
-        ))}
-      </p>
-
-      <div className="mx-auto flex max-w-[1400px] flex-wrap justify-between gap-2 border-t border-milk/10 py-6 text-sm text-milk/55">
-        <span>
-          © {year} Ryuartistry. {dict.footer.rights}
-        </span>
-        <span>{dict.footer.madeWith}</span>
+        <div className="mt-16 flex flex-col-reverse items-center justify-between gap-6 sm:flex-row">
+          <p className="text-center text-sm text-muted">
+            © {year} Ryuartistry <span aria-hidden>•</span> {dict.footer.madeWith}
+          </p>
+          <ThemeSwitch labels={dict.theme} />
+        </div>
       </div>
     </footer>
   );

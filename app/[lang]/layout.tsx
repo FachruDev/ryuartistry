@@ -5,10 +5,10 @@ import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, locales, pick } from "@/lib/i18n";
 import { getSettings } from "@/lib/queries";
 import { alternates, siteUrl } from "@/lib/site";
+import { themeScript } from "@/lib/theme";
 import { Nav } from "@/components/site/nav";
-import { ClayCursor } from "@/components/site/cursor";
 import { Footer } from "@/components/site/footer";
-import { SmoothScroll } from "@/components/site/smooth-scroll";
+import { ThemeSync } from "@/components/site/theme-toggle";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -36,27 +36,35 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 }
 
 export const viewport: Viewport = {
-  themeColor: "#f4f1fb",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4efe7" },
+    { media: "(prefers-color-scheme: dark)", color: "#131527" },
+  ],
 };
 
 export default async function SiteLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const dict = getDictionary(lang);
-  const settings = await getSettings();
 
   return (
-    <html lang={lang} className={`${fontVariables} antialiased`}>
-      <body className="grain min-h-screen bg-milk text-plum">
+    // The inline script sets data-theme before paint, so React must accept the attribute it finds.
+    <html lang={lang} className={`${fontVariables} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="relative isolate min-h-screen bg-paper text-ink">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[58rem] overflow-hidden">
+          <div className="wash" />
+        </div>
         <a
           href="#main"
-          className="sr-only rounded-full bg-[var(--butter)] px-5 py-2.5 font-semibold text-plum focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+          className="sr-only rounded-full bg-ink px-5 py-2.5 font-semibold text-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
         >
-          {lang === "id" ? "Langsung ke konten" : "Skip to content"}
+          {dict.nav.skip}
         </a>
-        <SmoothScroll />
-        <ClayCursor />
-        <Nav lang={lang} nav={dict.nav} email={settings?.contactEmail} />
+        <ThemeSync />
+        <Nav lang={lang} nav={dict.nav} themeLabel={dict.theme.toggle} />
         <main id="main">{children}</main>
         <Footer lang={lang} dict={dict} />
       </body>

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work">): P
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.work.title, description: dict.work.intro, alternates: alternates(lang, "/work") };
+  return { title: dict.nav.work, description: dict.work.intro, alternates: alternates(lang, "/work") };
 }
 
 export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
@@ -24,16 +24,9 @@ export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.work.eyebrow} title={dict.work.title} intro={dict.work.intro} clay="var(--peach)" accent="var(--lilac)" />
-      <section className="mx-auto max-w-[1400px] px-4 pb-28 sm:px-8 md:pb-40">
-        <WorkGrid
-          items={projects.map(toWorkCard)}
-          categories={categories}
-          lang={lang}
-          allLabel={dict.work.all}
-          emptyLabel={dict.work.empty}
-          cursorLabel={dict.cursor.view}
-        />
+      <PageIntro eyebrow={dict.work.eyebrow} title={dict.work.title} intro={dict.work.intro} />
+      <section className="mx-auto max-w-[1240px] px-4 sm:px-8">
+        <WorkGrid items={projects.map(toWorkCard)} categories={categories} lang={lang} labels={dict.work} />
       </section>
     </PageTransition>
   );

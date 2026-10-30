@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { clayCycle } from "@/lib/clay";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, pick } from "@/lib/i18n";
 import { getTeam } from "@/lib/queries";
 import { alternates } from "@/lib/site";
+import { toneCycle } from "@/lib/tones";
+import { CtaCard } from "@/components/site/cta-card";
 import { PageIntro } from "@/components/site/page-intro";
 import { PageTransition } from "@/components/site/page-transition";
-import { Eyebrow } from "@/components/site/pill";
 import { Reveal } from "@/components/site/reveal";
+import { SectionHeading } from "@/components/site/ui";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/about">): Promise<Metadata> {
   const { lang } = await params;
@@ -17,10 +18,6 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/about">): 
   const dict = getDictionary(lang);
   return { title: dict.about.eyebrow, description: dict.about.intro, alternates: alternates(lang, "/about") };
 }
-
-// Asymmetric bento for the values: a wide card, a tall one, then two compact ones.
-const valueCells = ["md:col-span-7", "md:col-span-5 md:row-span-2", "md:col-span-3", "md:col-span-4"];
-const valueShapes = ["rounded-full", "rounded-[35%]", "rounded-[50%_50%_50%_10%]", "rounded-[30%_70%_60%_40%]"];
 
 export default async function AboutPage({ params }: PageProps<"/[lang]/about">) {
   const { lang } = await params;
@@ -30,51 +27,58 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
 
   return (
     <PageTransition>
-      <PageIntro eyebrow={dict.about.eyebrow} title={dict.about.title} intro={dict.about.intro} clay="var(--butter)" accent="var(--lilac)" />
+      <PageIntro eyebrow={dict.about.eyebrow} title={dict.about.title} intro={dict.about.intro} />
 
-      <section className="mx-auto max-w-[1400px] px-4 pb-28 sm:px-8 md:pb-40">
-        <Reveal>
-          <Eyebrow clay="var(--peach)">{dict.about.valuesTitle}</Eyebrow>
+      <section className="px-4 pb-24 sm:px-8 md:pb-36">
+        <Reveal className="mx-auto max-w-[900px] rounded-[2.5rem] bg-paper-raised/70 p-8 ring-1 ring-line md:rounded-[3.5rem] md:p-14">
+          <p className="text-[clamp(1.3rem,2.4vw,1.85rem)] font-medium leading-[1.5] tracking-[-0.01em] text-ink">{dict.about.story}</p>
         </Reveal>
-        <div className="mt-10 grid gap-5 md:grid-cols-12">
+      </section>
+
+      <section className="px-4 pb-24 sm:px-8 md:pb-36">
+        <Reveal>
+          <SectionHeading title={dict.about.valuesTitle} />
+        </Reveal>
+        <ol className="mx-auto mt-14 grid max-w-[1240px] gap-x-8 gap-y-12 sm:grid-cols-2 md:mt-20 lg:grid-cols-4">
           {dict.about.values.map((v, i) => (
-            <Reveal key={v.title} delay={i * 0.08} className={valueCells[i % valueCells.length]}>
-              <div
-                className={`clay flex h-full flex-col justify-between gap-10 p-8 sm:p-10 ${i === 1 ? "md:min-h-[28rem]" : "min-h-[14rem]"}`}
-                style={{ ["--clay" as string]: clayCycle[i % clayCycle.length] }}
-              >
-                <span aria-hidden className={`clay block size-10 ${valueShapes[i % valueShapes.length]}`} style={{ ["--clay" as string]: "var(--cloud)" }} />
-                <div>
-                  <h2 className="display text-[clamp(2rem,3.4vw,3.2rem)] text-plum">{v.title}</h2>
-                  <p className="mt-3 max-w-[36ch] text-lg leading-relaxed text-plum/75">{v.body}</p>
-                </div>
-              </div>
-            </Reveal>
+            <li key={v.title} className="group border-t border-line pt-6">
+              <Reveal delay={i * 0.08}>
+                <span
+                  className="display grid size-12 place-items-center rounded-full text-lg text-on-pastel transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-rotate-12 group-hover:scale-110"
+                  style={{ background: toneCycle[i % toneCycle.length] }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="display mt-6 text-[2rem] text-ink">{v.title}</h3>
+                <p className="mt-3 max-w-[34ch] leading-relaxed text-muted">{v.body}</p>
+              </Reveal>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
       {team.length > 0 && (
-        <section className="mx-auto max-w-[1400px] px-4 pb-28 sm:px-8 md:pb-40">
+        <section className="px-4 pb-24 sm:px-8 md:pb-36">
           <Reveal>
-            <h2 className="display text-[clamp(2.4rem,5vw,4.4rem)] text-plum">{dict.about.teamTitle}</h2>
+            <SectionHeading title={dict.about.teamTitle} />
           </Reveal>
-          <ul className="mt-12 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mx-auto mt-14 grid max-w-[1240px] gap-x-6 gap-y-14 sm:grid-cols-2 md:mt-20 lg:grid-cols-4">
             {team.map((m, i) => (
-              <li key={m.id} className={i % 2 ? "lg:mt-16" : ""}>
+              <li key={m.id} className="group">
                 <Reveal delay={(i % 4) * 0.08}>
-                  <div className="bezel">
-                    <div className="bezel-core relative aspect-[4/5]" style={{ background: clayCycle[i % clayCycle.length] }}>
-                      {m.photo && <Image src={m.photo.url} alt={m.name} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />}
-                    </div>
+                  <div
+                    className="relative aspect-[4/5] overflow-hidden rounded-[2rem] transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-1.5 group-hover:-rotate-1"
+                    style={{ background: toneCycle[i % toneCycle.length] }}
+                  >
+                    {m.photo && <Image src={m.photo.url} alt={m.name} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />}
                   </div>
-                  <h3 className="display mt-5 text-2xl text-plum">{m.name}</h3>
-                  <p className="font-semibold text-plum-soft">{pick(m.role, lang)}</p>
-                  {pick(m.bio, lang) && <p className="mt-3 text-plum/75">{pick(m.bio, lang)}</p>}
+                  <h3 className="display mt-5 text-2xl text-ink">{m.name}</h3>
+                  <p className="font-medium text-muted">{pick(m.role, lang)}</p>
+                  {pick(m.bio, lang) && <p className="mt-3 leading-relaxed text-muted">{pick(m.bio, lang)}</p>}
                   {m.socials.length > 0 && (
-                    <p className="mt-3 flex flex-wrap gap-2">
+                    <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
                       {m.socials.map((s) => (
-                        <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="rounded-full bg-plum/[0.05] px-3 py-1 text-sm font-semibold text-plum hover:bg-plum/10">
+                        <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="link-grow text-sm font-semibold text-ink">
                           {s.label}
                         </a>
                       ))}
@@ -86,6 +90,8 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
           </ul>
         </section>
       )}
+
+      <CtaCard title={dict.careers.title} body={dict.careers.intro} primary={{ href: `/${lang}/careers`, label: dict.nav.careers }} />
     </PageTransition>
   );
 }

@@ -3,34 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import type { Dictionary } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
+import { ThemeToggle } from "./theme-toggle";
 
 const ease = [0.32, 0.72, 0, 1] as const;
-const clays = ["var(--lilac)", "var(--mint)", "var(--sky)", "var(--peach)", "var(--butter)", "var(--lilac)"];
+const glass =
+  "bg-[var(--nav)] ring-1 ring-line/70 backdrop-blur-xl backdrop-saturate-150 shadow-[0_12px_32px_-20px_rgb(31_37_80/0.4)]";
+const roundButton = `size-11 rounded-full text-ink transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-0.5 active:scale-95 ${glass}`;
 
-export function Nav({ lang, nav, email }: { lang: Locale; nav: Dictionary["nav"]; email?: string | null }) {
+export function Nav({ lang, nav, themeLabel }: { lang: Locale; nav: Dictionary["nav"]; themeLabel: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
   const [lastPath, setLastPath] = useState(pathname);
-  const { scrollY } = useScroll();
 
   if (pathname !== lastPath) {
     setLastPath(pathname);
     setOpen(false);
   }
 
-  // Sticky but polite: tucks away while reading down, returns on the way up.
-  useMotionValueEvent(scrollY, "change", (y) => {
-    const prev = scrollY.getPrevious() ?? 0;
-    setHidden(y > 240 && y > prev + 4);
-    if (y < prev - 4) setHidden(false);
-  });
-
   useEffect(() => {
-    document.documentElement.style.overflow = open ? "hidden" : "";
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -41,122 +37,113 @@ export function Nav({ lang, nav, email }: { lang: Locale; nav: Dictionary["nav"]
     { href: `/${lang}/lab`, label: nav.lab },
     { href: `/${lang}/services`, label: nav.services },
     { href: `/${lang}/about`, label: nav.about },
-    { href: `/${lang}/careers`, label: nav.careers },
     { href: `/${lang}/contact`, label: nav.contact },
   ];
+  const menuLinks = [{ href: `/${lang}`, label: nav.home }, ...links.slice(0, 4), { href: `/${lang}/careers`, label: nav.careers }, links[4]];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const current = links.find((l) => isActive(l.href))?.href ?? null;
+  const lit = hovered ?? current;
+
   const otherLang: Locale = lang === "id" ? "en" : "id";
   const switchHref = pathname.replace(/^\/(id|en)(?=\/|$)/, `/${otherLang}`);
 
   return (
     <>
-      <motion.header
-        style={{ viewTransitionName: "site-nav" }}
-        animate={{ y: hidden && !open ? -110 : 0 }}
-        transition={{ duration: 0.6, ease }}
-        className="fixed inset-x-0 top-0 z-40 flex justify-center px-3 pt-4"
-      >
-        <div className="flex w-full max-w-[880px] items-center justify-between gap-2 rounded-full bg-cloud/70 py-2 pl-5 pr-2 shadow-[0_20px_50px_-24px_rgba(42,30,63,0.35)] ring-1 ring-plum/[0.07] backdrop-blur-xl">
-          <Link href={`/${lang}`} className="display flex items-baseline text-[1.45rem] text-plum" aria-label="Ryuartistry">
-            ryu
-            <span aria-hidden className="mx-[1px] inline-block size-2.5 translate-y-[-2px] rounded-full bg-[var(--berry)]" />
-            artistry
+      <header className="fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-4">
+        <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-3">
+          <Link href={`/${lang}`} aria-label="Ryuartistry" className={`group display flex h-11 items-center rounded-full px-4 text-[1.3rem] tracking-[-0.04em] text-ink ${glass}`}>
+            ryuartistry
+            <span className="inline-block text-accent transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-1.5">.</span>
           </Link>
 
-          <nav aria-label="Utama" className="hidden items-center gap-1 lg:flex">
-            {links.slice(0, 5).map((l) => {
-              const active = pathname.startsWith(l.href);
-              return (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`rounded-full px-3.5 py-2 text-[14px] font-semibold transition-colors duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                    active ? "bg-plum text-milk" : "text-plum-soft hover:bg-plum/[0.06] hover:text-plum"
-                  }`}
-                >
-                  {l.label}
-                </Link>
-              );
-            })}
+          <nav aria-label={nav.main} onMouseLeave={() => setHovered(null)} className={`hidden rounded-full p-1 md:flex ${glass}`}>
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={isActive(l.href) ? "page" : undefined}
+                onMouseEnter={() => setHovered(l.href)}
+                onFocus={() => setHovered(l.href)}
+                onBlur={() => setHovered(null)}
+                className="relative rounded-full px-4 py-2 text-[15px] font-medium text-muted transition-colors duration-300 hover:text-ink aria-[current=page]:text-ink"
+              >
+                {lit === l.href && (
+                  <motion.span
+                    layoutId="nav-highlight"
+                    aria-hidden
+                    className="absolute inset-0 rounded-full bg-paper-raised shadow-[0_2px_10px_-4px_rgb(31_37_80/0.25)] ring-1 ring-line"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span className="relative">{l.label}</span>
+              </Link>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <Link
               href={switchHref}
               hrefLang={otherLang}
               aria-label={otherLang === "en" ? "Switch to English" : "Ganti ke Bahasa Indonesia"}
-              className="grid size-10 place-items-center rounded-full text-[13px] font-bold text-plum-soft ring-1 ring-plum/10 transition-colors hover:bg-plum/[0.06] hover:text-plum"
+              className={`grid place-items-center text-[13px] font-bold ${roundButton}`}
             >
               {otherLang.toUpperCase()}
             </Link>
-            <Link
-              href={`/${lang}/contact`}
-              className="hidden rounded-full bg-plum px-4 py-2.5 text-[14px] font-semibold text-milk transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-0.5 active:scale-[0.98] sm:inline-flex"
-            >
-              {nav.letsTalk}
-            </Link>
+            <ThemeToggle label={themeLabel} className={roundButton} />
             <button
               type="button"
               onClick={() => setOpen((o) => !o)}
               aria-expanded={open}
               aria-controls="site-menu"
               aria-label={open ? nav.close : nav.menu}
-              className="relative grid size-10 place-items-center rounded-full bg-[var(--butter)] text-plum transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 lg:hidden"
+              className={`relative grid place-items-center md:hidden ${roundButton}`}
             >
-              <span className={`absolute h-[1.5px] w-4 rounded bg-current transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "rotate-45" : "-translate-y-[3.5px]"}`} />
-              <span className={`absolute h-[1.5px] w-4 rounded bg-current transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "-rotate-45" : "translate-y-[3.5px]"}`} />
+              <span className={`absolute h-[2px] w-4 rounded bg-current transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "rotate-45" : "-translate-y-[3.5px]"}`} />
+              <span className={`absolute h-[2px] w-4 rounded bg-current transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${open ? "-rotate-45" : "translate-y-[3.5px]"}`} />
             </button>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <AnimatePresence>
         {open && (
-          <motion.div
-            id="site-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label={nav.menu}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.35, ease } }}
-            transition={{ duration: 0.5, ease }}
-            className="fixed inset-0 z-30 flex flex-col justify-between overflow-y-auto bg-milk/85 px-6 pb-10 pt-28 backdrop-blur-3xl"
-          >
-            <div aria-hidden className="morph-blob pointer-events-none absolute -right-24 top-24 size-72 bg-[var(--peach)] opacity-60 blur-2xl" />
-            <div aria-hidden className="morph-blob pointer-events-none absolute -left-20 bottom-20 size-64 bg-[var(--lilac)] opacity-60 blur-2xl" />
-            <nav aria-label={nav.menu} className="relative">
-              <ul className="space-y-1">
-                {links.map((l, i) => (
-                  <li key={l.href} className="overflow-hidden">
-                    <motion.div
-                      initial={{ y: 56, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.8, delay: 0.08 + i * 0.05, ease }}
+          <>
+            <motion.div
+              key="scrim"
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-30 bg-paper/40 backdrop-blur-sm md:hidden"
+            />
+            <motion.nav
+              key="panel"
+              id="site-menu"
+              aria-label={nav.menu}
+              initial={{ opacity: 0, y: -12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.4, ease }}
+              className="fixed inset-x-3 top-[4.5rem] z-40 origin-top rounded-[2rem] bg-paper-raised/95 p-2 shadow-[0_30px_60px_-30px_rgb(31_37_80/0.5)] ring-1 ring-line backdrop-blur-xl md:hidden"
+            >
+              <ul>
+                {menuLinks.map((l, i) => (
+                  <motion.li key={l.href} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.04 + i * 0.04, ease }}>
+                    <Link
+                      href={l.href}
+                      aria-current={pathname === l.href ? "page" : undefined}
+                      className="group display flex items-center justify-between rounded-[1.4rem] px-4 py-3 text-[2rem] text-ink transition-colors aria-[current=page]:bg-paper"
                     >
-                      <Link href={l.href} className="group flex items-center gap-4 py-1">
-                        <span aria-hidden className="clay size-5 rounded-full transition-transform duration-500 group-hover:scale-125" style={{ ["--clay" as string]: clays[i] }} />
-                        <span className="display text-[clamp(2.75rem,12vw,5rem)] text-plum transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-2">
-                          {l.label}
-                        </span>
-                      </Link>
-                    </motion.div>
-                  </li>
+                      {l.label}
+                      <ArrowRight weight="bold" className="size-5 text-muted transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-1" />
+                    </Link>
+                  </motion.li>
                 ))}
               </ul>
-            </nav>
-            {email && (
-              <motion.a
-                href={`mailto:${email}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.45, ease }}
-                className="relative mt-10 text-lg font-semibold text-plum-soft underline decoration-[var(--berry)] decoration-2 underline-offset-4"
-              >
-                {email}
-              </motion.a>
-            )}
-          </motion.div>
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
     </>
