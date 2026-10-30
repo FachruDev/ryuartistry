@@ -3,7 +3,8 @@
 Website studio kreatif Ryuartistry (AI, game, software, kreatif) beserta CMS bawaan di `/admin`.
 
 - **Situs publik** dua bahasa: `/id` dan `/en`. Pengunjung diarahkan otomatis sesuai bahasa browser.
-- **CMS** untuk Karya (portofolio), Lab (blog/devlog), Layanan, Tim, Inbox kontak, Media, dan Pengaturan situs.
+- **CMS** untuk Karya (portofolio), Lab (blog/devlog), Layanan, Tim, Inbox kontak, Media, dan Pengaturan situs, dengan dashboard analitik dan pencarian cepat (Ctrl + K).
+- **Asisten AI**: Claude bisa membaca dan mengubah isi CMS lewat MCP, memakai langganan Claude yang sudah ada (tanpa API berbayar per pemakaian).
 
 ## Stack
 
@@ -73,7 +74,9 @@ app/admin/         CMS; semua halaman memeriksa sesi sendiri
 app/api/           handler Better Auth dan upload media
 lib/db/schema.ts   skema database (teks dua bahasa disimpan sebagai { id, en })
 lib/queries.ts     query publik dengan "use cache" + cacheTag
-lib/actions/       Server Actions CMS; setiap simpan memanggil updateTag
+lib/actions/       Server Actions CMS; setiap simpan memanggil updateTag dan mencatat aktivitas
+lib/mcp/tools.ts   tool MCP untuk asisten AI (dipakai app/api/mcp)
+lib/analytics.ts   query dan wawasan untuk dashboard analitik
 components/site/   komponen situs (navigasi, hero, kartu karya, toggle tema, dsb.)
 components/admin/  komponen CMS (editor, media picker, form)
 ```
@@ -81,6 +84,27 @@ components/admin/  komponen CMS (editor, media picker, form)
 ## Cara konten diperbarui
 
 Halaman publik di-prerender dan di-cache. Saat editor menyimpan di CMS, Server Action memanggil `updateTag(...)` untuk jenis konten tersebut, jadi perubahan langsung tampil tanpa perlu deploy ulang. Konten berstatus **Draf** tidak pernah tampil di situs.
+
+## Analitik
+
+Setiap halaman publik mengirim satu beacon kecil ke `/api/track` (`components/site/analytics.tsx`). Tidak ada cookie: pengunjung dikenali dari hash IP + user agent dengan salt yang berganti setiap hari, sesi disimpan di `sessionStorage` per tab. Bot dan admin yang sedang masuk tidak dihitung. Negara terbaca dari header Vercel, jadi kosong saat lokal.
+
+Halaman **Analitik** menampilkan pengunjung, tayangan, halaman per kunjungan, waktu baca, konversi ke pesan masuk, tren harian dibanding periode sebelumnya, halaman teratas, sumber, negara, perangkat, bahasa, jam ramai (WIB), dan wawasan otomatis (`lib/analytics.ts`). Ringkasan **Kesehatan konten** di dashboard (`lib/cms-health.ts`) menandai karya tanpa sampul, terjemahan kosong, draf terbengkalai, dan gambar tanpa alt.
+
+## Asisten AI (MCP)
+
+`/api/mcp` adalah server [MCP](https://modelcontextprotocol.io) tanpa state (Streamable HTTP, JSON). Claude Code atau Claude Desktop terhubung ke sini dan menjalankan tool seperti `cms_overview`, `save_project`, `save_post`, `upload_media_from_url`, dan `get_analytics` (daftar lengkap di `lib/mcp/tools.ts`). AI-nya berjalan di aplikasi Claude milik Anda; server ini hanya menyediakan tool, jadi tidak ada biaya API.
+
+1. Buka CMS → **Asisten AI**, buat token (hanya admin). Token tampil sekali; yang disimpan hanya hash-nya.
+2. Tempel perintah yang muncul, misalnya:
+
+   ```bash
+   claude mcp add --transport http --scope user ryuartistry https://domain-anda/api/mcp --header "Authorization: Bearer ryu_…"
+   ```
+
+3. Minta dalam bahasa biasa: "Buat 3 karya contoh untuk kategori game, dua bahasa, simpan sebagai draft."
+
+Setiap perubahan oleh AI tercatat di **Aktivitas terbaru** dengan nama tokennya, dan cache halaman publik langsung diperbarui. Token bisa dicabut kapan saja dari halaman yang sama.
 
 ## Deploy ke Vercel
 

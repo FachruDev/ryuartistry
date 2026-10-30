@@ -213,6 +213,61 @@ export const siteSettings = pgTable("site_settings", {
     .$onUpdate(() => new Date()),
 });
 
+// ---------------------------------------------------------------------------
+// Analytics, AI access, and audit trail
+// ---------------------------------------------------------------------------
+
+/**
+ * One row per public page view. No cookies: `visitorId` is a hash of IP + user agent
+ * with a salt that rotates daily, so a visitor cannot be followed across days.
+ */
+export const pageViews = pgTable(
+  "page_views",
+  {
+    id: uuid("id").primaryKey(),
+    path: text("path").notNull(),
+    locale: text("locale"),
+    referrer: text("referrer"),
+    utmSource: text("utm_source"),
+    visitorId: text("visitor_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    country: text("country"),
+    device: text("device").notNull(),
+    browser: text("browser"),
+    os: text("os"),
+    durationMs: integer("duration_ms"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("page_views_created_at_idx").on(t.createdAt), index("page_views_path_idx").on(t.path)],
+);
+
+/** Personal access tokens for the MCP endpoint. Only the SHA-256 hash is stored. */
+export const apiTokens = pgTable("api_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  prefix: text("prefix").notNull(),
+  createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const activityLog = pgTable(
+  "activity_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorType: text("actor_type").$type<"user" | "ai">().notNull(),
+    actorName: text("actor_name").notNull(),
+    action: text("action").$type<"create" | "update" | "delete">().notNull(),
+    entity: text("entity").notNull(),
+    entityId: text("entity_id"),
+    label: text("label").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("activity_log_created_at_idx").on(t.createdAt)],
+);
+
 export const projectsRelations = relations(projects, ({ one }) => ({
   cover: one(media, { fields: [projects.coverId], references: [media.id] }),
   category: one(categories, { fields: [projects.categoryId], references: [categories.id] }),
@@ -236,3 +291,6 @@ export type Inquiry = typeof inquiries.$inferSelect;
 export type Media = typeof media.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
+export type PageView = typeof pageViews.$inferSelect;
+export type ApiToken = typeof apiTokens.$inferSelect;
+export type Activity = typeof activityLog.$inferSelect;

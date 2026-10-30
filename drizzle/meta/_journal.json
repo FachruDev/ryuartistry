@@ -15,6 +15,13 @@
       "when": 1793347649960,
       "tag": "0001_square_beyonder",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793352978059,
+      "tag": "0002_analytics_ai_activity",
+      "breakpoints": true
     }
   ]
 }

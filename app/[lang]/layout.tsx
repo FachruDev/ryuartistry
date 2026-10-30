@@ -10,6 +10,7 @@ import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { HeroGlow } from "@/components/site/hero-glow";
 import { ThemeSync } from "@/components/site/theme-toggle";
+import { Analytics } from "@/components/site/analytics";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -62,6 +63,7 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
           {dict.nav.skip}
         </a>
         <ThemeSync />
+        <Analytics />
         <Nav lang={lang} nav={dict.nav} theme={dict.theme} />
         {/* The page is an opaque sheet above the footer, which waits pinned underneath and is uncovered at the end. */}
         <main

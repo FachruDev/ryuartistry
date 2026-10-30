@@ -20,7 +20,7 @@ export function ProjectForm({ action, project, gallery, categories }: Props) {
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="grid gap-8 xl:grid-cols-[1fr_320px]">
+    <form action={formAction} data-save-form className="grid gap-8 xl:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <LocalizedField name="title" label="Judul" defaultValue={project?.title} error={errors.title} />
         <Field label="Slug" hint="Bagian URL. Kosongkan untuk dibuat otomatis dari judul." error={errors.slug}>
@@ -42,6 +42,7 @@ export function ProjectForm({ action, project, gallery, categories }: Props) {
           <Checkbox name="featured" label="Tampilkan di beranda" defaultChecked={project?.featured} />
           <FormMessage error={state.error} ok={state.ok} />
           <SubmitButton className="w-full">{project ? "Simpan perubahan" : "Buat karya"}</SubmitButton>
+          <p className="text-center text-xs text-muted">atau tekan Ctrl + S</p>
         </div>
         <MediaPicker name="coverId" label="Gambar sampul" defaultValue={project?.cover} />
         <Field label="Kategori">

@@ -5,9 +5,10 @@ import { requireUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { tags } from "@/lib/cache-tags";
 import { links, localized, optionalStr, type FormState } from "@/lib/forms";
+import { logActivity } from "@/lib/activity";
 
 export async function saveSettings(_prev: FormState, form: FormData): Promise<FormState> {
-  await requireUser();
+  const user = await requireUser();
   const values = {
     tagline: localized(form, "tagline"),
     heroTitle: localized(form, "heroTitle"),
@@ -19,6 +20,7 @@ export async function saveSettings(_prev: FormState, form: FormData): Promise<Fo
     .insert(schema.siteSettings)
     .values({ id: 1, ...values })
     .onConflictDoUpdate({ target: schema.siteSettings.id, set: values });
+  await logActivity({ type: "user", name: user.name }, "update", "settings", "1", "Pengaturan situs");
   updateTag(tags.settings);
   return { ok: true };
 }

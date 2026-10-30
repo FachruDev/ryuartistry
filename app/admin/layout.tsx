@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function AdminRootLayout({ children }: LayoutProps<"/admin">) {
   return (
     <html lang="id" className={`${fontVariables} h-full antialiased`}>
-      <body className="min-h-full bg-paper text-text">{children}</body>
+      <body className="cms min-h-full bg-paper text-text">{children}</body>
     </html>
   );
 }

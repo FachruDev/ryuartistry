@@ -13,7 +13,7 @@ export function ServiceForm({ action, service }: { action: Action; service?: Ser
   const [state, formAction] = useActionState(action, {});
   const errors = state.fieldErrors ?? {};
   return (
-    <form action={formAction} className="max-w-3xl space-y-6">
+    <form action={formAction} data-save-form className="max-w-3xl space-y-6">
       <LocalizedField name="title" label="Nama layanan" defaultValue={service?.title} error={errors.title} />
       <LocalizedField name="description" label="Deskripsi" multiline defaultValue={service?.description} />
       <div className="grid gap-4 sm:grid-cols-3">
@@ -42,7 +42,7 @@ export function TeamForm({ action, member }: { action: Action; member?: TeamMemb
   const [state, formAction] = useActionState(action, {});
   const errors = state.fieldErrors ?? {};
   return (
-    <form action={formAction} className="max-w-3xl space-y-6">
+    <form action={formAction} data-save-form className="max-w-3xl space-y-6">
       <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
         <Field label="Nama" error={errors.name}>
           <Input name="name" defaultValue={member?.name} required />
@@ -66,7 +66,7 @@ export function TeamForm({ action, member }: { action: Action; member?: TeamMemb
 export function SettingsForm({ action, settings }: { action: Action; settings?: SiteSettings }) {
   const [state, formAction] = useActionState(action, {});
   return (
-    <form action={formAction} className="max-w-3xl space-y-6">
+    <form action={formAction} data-save-form className="max-w-3xl space-y-6">
       <LocalizedField name="tagline" label="Tagline" defaultValue={settings?.tagline} hint="Dipakai sebagai deskripsi SEO dan di footer." />
       <LocalizedField
         name="heroTitle"

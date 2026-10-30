@@ -19,7 +19,7 @@ export function PostForm({ action, post, categories }: Props) {
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="grid gap-8 xl:grid-cols-[1fr_320px]">
+    <form action={formAction} data-save-form className="grid gap-8 xl:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <LocalizedField name="title" label="Judul" defaultValue={post?.title} error={errors.title} />
         <Field label="Slug" hint="Bagian URL. Kosongkan untuk dibuat otomatis dari judul." error={errors.slug}>
@@ -39,6 +39,7 @@ export function PostForm({ action, post, categories }: Props) {
           </Field>
           <FormMessage error={state.error} ok={state.ok} />
           <SubmitButton className="w-full">{post ? "Simpan perubahan" : "Buat catatan"}</SubmitButton>
+          <p className="text-center text-xs text-muted">atau tekan Ctrl + S</p>
         </div>
         <MediaPicker name="coverId" label="Gambar sampul" defaultValue={post?.cover} />
         <Field label="Kategori">

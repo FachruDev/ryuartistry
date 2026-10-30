@@ -22,9 +22,10 @@ import {
   type FormState,
 } from "@/lib/forms";
 import { checkBasics } from "./validate";
+import { logActivity, titleOf } from "@/lib/activity";
 
 export async function saveProject(id: string | null, _prev: FormState, form: FormData): Promise<FormState> {
-  await requireUser();
+  const user = await requireUser();
 
   const title = localized(form, "title");
   const slug = str(form, "slug") || slugify(title.en || title.id);
@@ -73,14 +74,16 @@ export async function saveProject(id: string | null, _prev: FormState, form: For
     throw error;
   }
 
+  await logActivity({ type: "user", name: user.name }, id ? "update" : "create", "project", savedId, titleOf(title));
   updateTag(tags.projects);
   if (!id) redirect(`/admin/projects/${savedId}`);
   return { ok: true };
 }
 
 export async function deleteProject(id: string) {
-  await requireUser();
-  await db.delete(schema.projects).where(eq(schema.projects.id, id));
+  const user = await requireUser();
+  const [row] = await db.delete(schema.projects).where(eq(schema.projects.id, id)).returning({ title: schema.projects.title });
+  if (row) await logActivity({ type: "user", name: user.name }, "delete", "project", id, titleOf(row.title));
   updateTag(tags.projects);
   redirect("/admin/projects");
 }

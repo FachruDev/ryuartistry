@@ -18,6 +18,7 @@ import {
   type FormState,
 } from "@/lib/forms";
 import { checkBasics } from "./validate";
+import { logActivity, titleOf } from "@/lib/activity";
 
 export async function savePost(id: string | null, _prev: FormState, form: FormData): Promise<FormState> {
   const user = await requireUser();
@@ -64,14 +65,16 @@ export async function savePost(id: string | null, _prev: FormState, form: FormDa
     throw error;
   }
 
+  await logActivity({ type: "user", name: user.name }, id ? "update" : "create", "post", savedId, titleOf(title));
   updateTag(tags.posts);
   if (!id) redirect(`/admin/posts/${savedId}`);
   return { ok: true };
 }
 
 export async function deletePost(id: string) {
-  await requireUser();
-  await db.delete(schema.posts).where(eq(schema.posts.id, id));
+  const user = await requireUser();
+  const [row] = await db.delete(schema.posts).where(eq(schema.posts.id, id)).returning({ title: schema.posts.title });
+  if (row) await logActivity({ type: "user", name: user.name }, "delete", "post", id, titleOf(row.title));
   updateTag(tags.posts);
   redirect("/admin/posts");
 }
