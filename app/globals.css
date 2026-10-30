@@ -28,9 +28,6 @@
   --frame-bar: #efede6;
   --sparkle: #ffffff;
   --nav: rgb(251 250 246 / 0.72);
-  --wash-a: rgb(244 223 134 / 0.5);
-  --wash-b: rgb(167 220 196 / 0.5);
-  --wash-c: rgb(246 198 209 / 0.42);
   /* Shadow tint as RGB channels: ink-blue on paper, plain black at night. */
   --shade: 20 33 61;
 
@@ -67,9 +64,6 @@
   --frame-bar: #253149;
   --sparkle: #e8cf6c;
   --nav: rgb(23 33 51 / 0.7);
-  --wash-a: rgb(232 207 108 / 0.1);
-  --wash-b: rgb(143 203 176 / 0.12);
-  --wash-c: rgb(224 68 42 / 0.1);
   --shade: 0 0 0;
 }
 
@@ -134,23 +128,6 @@ body {
   letter-spacing: -0.045em;
   line-height: 0.98;
   text-wrap: balance;
-}
-
-/* Soft colour wash behind the top of every page. */
-.wash {
-  position: absolute;
-  inset: -10% -5% 0;
-  background:
-    radial-gradient(38% 46% at 16% 22%, var(--wash-a), transparent 70%),
-    radial-gradient(42% 50% at 84% 10%, var(--wash-b), transparent 70%),
-    radial-gradient(48% 56% at 54% 46%, var(--wash-c), transparent 74%);
-  mask-image: linear-gradient(to bottom, black 35%, transparent 95%);
-  animation: wash-drift 22s ease-in-out infinite alternate;
-}
-@keyframes wash-drift {
-  to {
-    transform: translate3d(3%, 2%, 0) scale(1.06);
-  }
 }
 
 /* Sparkles drift and twinkle a little. */

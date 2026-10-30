@@ -8,6 +8,7 @@ import { alternates, siteUrl } from "@/lib/site";
 import { themeScript } from "@/lib/theme";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
+import { HeroGlow } from "@/components/site/hero-glow";
 import { ThemeSync } from "@/components/site/theme-toggle";
 import "../globals.css";
 
@@ -54,8 +55,11 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="relative isolate min-h-screen bg-paper text-ink">
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[58rem] overflow-hidden">
-          <div className="wash" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[58rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_30%,transparent_95%)]"
+        >
+          <HeroGlow />
         </div>
         <a
           href="#main"

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Reveal } from "./reveal";
 import { Dotted, Eyebrow, Sparkle } from "./ui";
 
-/** Centred masthead for inner pages, sitting on the colour wash. */
+/** Centred masthead for inner pages, sitting on the drifting pastel glow. */
 export function PageIntro({ eyebrow, title, intro, children }: { eyebrow: string; title: string; intro?: string; children?: ReactNode }) {
   return (
     <section className="relative px-4 pb-16 pt-36 text-center sm:px-8 md:pb-24 md:pt-48">

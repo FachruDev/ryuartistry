@@ -61,6 +61,8 @@ Sederhana dan ringan, dengan palet "Naga" (dari *ryu*, naga): kertas beras, tint
 
 Font: Bricolage Grotesque untuk judul, Plus Jakarta Sans untuk teks.
 
+Cahaya pastel yang bergerak di bagian atas setiap halaman berasal dari kanvas 32×32 piksel (`components/site/hero-glow.tsx`) yang digambar ulang 30 kali per detik dan diregangkan oleh CSS, sehingga terlihat blur tanpa biaya besar. Warnanya dibaca dari token tema, berhenti saat tidak terlihat di layar, dan diam jika pengunjung memilih reduced motion.
+
 Tema mengikuti sistem sampai pengunjung memilih lewat tombol di navigasi atau footer; pilihannya disimpan di `localStorage`. Skrip kecil di `<head>` (`lib/theme.ts`) memasang `data-theme` sebelum halaman tampil, jadi tidak ada kedipan. Gunakan varian Tailwind `dark:` untuk gaya khusus mode gelap. CMS selalu memakai tema terang.
 
 ## Struktur
