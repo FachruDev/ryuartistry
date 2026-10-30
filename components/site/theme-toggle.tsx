@@ -89,7 +89,7 @@ export function ThemeSync() {
 
 const iconSwap = "absolute inset-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]";
 
-/** Round icon button for the nav. The icon follows the CSS theme, so it never flickers on load. */
+/** Icon-only button for the nav: a sun in light mode, a moon in dark. The icon follows CSS, so it never flickers on load. */
 export function ThemeToggle({ label, className = "" }: { label: string; className?: string }) {
   return (
     <button
@@ -99,9 +99,9 @@ export function ThemeToggle({ label, className = "" }: { label: string; classNam
       onClick={(e) => switchTheme(readTheme() === "dark" ? "light" : "dark", e)}
       className={`group grid place-items-center ${className}`}
     >
-      <span className="relative block size-[18px]">
-        <Sun weight="bold" className={`${iconSwap} group-hover:rotate-45 dark:rotate-90 dark:scale-50 dark:opacity-0`} />
-        <Moon weight="bold" className={`${iconSwap} -rotate-90 scale-50 opacity-0 group-hover:-rotate-12 dark:rotate-0 dark:scale-100 dark:opacity-100`} />
+      <span className="relative block size-5">
+        <Sun weight="bold" className={`${iconSwap} dark:rotate-90 dark:scale-50 dark:opacity-0`} />
+        <Moon weight="bold" className={`${iconSwap} -rotate-90 scale-50 opacity-0 dark:rotate-0 dark:scale-100 dark:opacity-100`} />
       </span>
     </button>
   );

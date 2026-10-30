@@ -107,9 +107,10 @@ const id = {
   footer: {
     explore: "Jelajahi",
     elsewhere: "Di tempat lain",
-    contact: "Kontak",
     madeWith: "Dibuat dengan teliti di Indonesia",
     tagline: "Studio kreatif untuk AI, game, software, dan brand.",
+    headline: "Ayo bikin sesuatu bersama.",
+    backToTop: "Kembali ke atas",
   },
   loading: "Memuat",
 };
@@ -223,9 +224,10 @@ const en: Dictionary = {
   footer: {
     explore: "Explore",
     elsewhere: "Elsewhere",
-    contact: "Contact",
     madeWith: "Made with care in Indonesia",
     tagline: "A creative studio for AI, games, software, and brands.",
+    headline: "Let's make something together.",
+    backToTop: "Back to top",
   },
   loading: "Loading",
 };

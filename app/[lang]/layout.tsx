@@ -55,12 +55,6 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="relative isolate min-h-screen bg-paper text-ink">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[58rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_30%,transparent_95%)]"
-        >
-          <HeroGlow />
-        </div>
         <a
           href="#main"
           className="sr-only rounded-full bg-ink px-5 py-2.5 font-semibold text-paper focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
@@ -68,8 +62,20 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
           {dict.nav.skip}
         </a>
         <ThemeSync />
-        <Nav lang={lang} nav={dict.nav} themeLabel={dict.theme.toggle} />
-        <main id="main">{children}</main>
+        <Nav lang={lang} nav={dict.nav} theme={dict.theme} />
+        {/* The page is an opaque sheet above the footer, which waits pinned underneath and is uncovered at the end. */}
+        <main
+          id="main"
+          className="relative z-10 rounded-b-[2.5rem] bg-paper pb-24 shadow-[0_40px_80px_-40px_rgb(var(--shade)/0.45)] md:rounded-b-[3.5rem] md:pb-32"
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[58rem] overflow-hidden [mask-image:linear-gradient(to_bottom,black_30%,transparent_95%)]"
+          >
+            <HeroGlow />
+          </div>
+          {children}
+        </main>
         <Footer lang={lang} dict={dict} />
       </body>
     </html>

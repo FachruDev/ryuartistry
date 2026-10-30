@@ -6,6 +6,7 @@ const spring = "duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]";
 const arrows = {
   right: "M5 12h14m-6-6 6 6-6 6",
   left: "M19 12H5m6-6-6 6 6 6",
+  up: "M12 19V5m-6 6 6-6 6 6",
   "up-right": "M7 17 17 7M8 7h9v9",
 };
 
