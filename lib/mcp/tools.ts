@@ -13,7 +13,7 @@ import { isUniqueViolation, readingTime, slugify } from "@/lib/forms";
 import { logActivity, titleOf, type Actor, type Entity } from "@/lib/activity";
 import { getAnalytics } from "@/lib/analytics";
 import { getContentHealth } from "@/lib/cms-health";
-import { deletePublic, uploadPublic } from "@/lib/storage";
+import { deletePublic, deleteStalePublic, presignPublicUpload, publicObjectSize, readPublic, uploadPublic } from "@/lib/storage";
 
 export class ToolError extends Error {}
 
@@ -109,7 +109,7 @@ async function assertMedia(ids: (string | null | undefined)[]) {
   if (!wanted.length) return;
   const rows = await db.select({ id: schema.media.id }).from(schema.media).where(inArray(schema.media.id, wanted));
   const missing = wanted.filter((id) => !rows.some((r) => r.id === id));
-  if (missing.length) throw new ToolError(`Media tidak ditemukan: ${missing.join(", ")}. Unggah dulu dengan upload_media_from_url.`);
+  if (missing.length) throw new ToolError(`Media tidak ditemukan: ${missing.join(", ")}. Unggah dulu dengan upload_media_from_url, create_media_upload, atau upload_media_base64.`);
 }
 
 // Route Handlers cannot use updateTag; expire immediately so the next visitor sees the change.
@@ -631,7 +631,7 @@ const updateSettings = defineTool({
   },
 });
 
-const ALLOWED_IMAGES: Record<string, string> = {
+const IMAGE_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
@@ -639,16 +639,51 @@ const ALLOWED_IMAGES: Record<string, string> = {
   "image/gif": "gif",
 };
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_BASE64_BYTES = 2 * 1024 * 1024;
+const UPLOAD_TTL_SECONDS = 15 * 60;
+const INCOMING_PREFIX = "incoming/mcp/";
+
+/** Image type from the file's first bytes, so a wrong or missing Content-Type does not matter. */
+function sniffImage(bytes: Uint8Array): string | null {
+  const ascii = (from: number, to: number) => String.fromCharCode(...bytes.subarray(from, to));
+  if (bytes[0] === 0x89 && ascii(1, 4) === "PNG") return "image/png";
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (ascii(0, 6) === "GIF87a" || ascii(0, 6) === "GIF89a") return "image/gif";
+  if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
+  if (ascii(4, 8) === "ftyp" && /avi[fs]/.test(ascii(8, 32))) return "image/avif";
+  return null;
+}
+
+const altInput = localizedInput.optional().describe("Teks alternatif yang menjelaskan isi gambar.");
+const filenameInput = z.string().optional().describe("Nama file yang mudah dibaca, tanpa ekstensi.");
+
+/** Validates image bytes, stores them under uploads/, and records the media row. */
+async function storeImage(bytes: Uint8Array, name: string | undefined, alt: Partial<Localized> | undefined, actor: Actor) {
+  const mime = sniffImage(bytes);
+  if (!mime) throw new ToolError("File bukan gambar yang didukung (JPG, PNG, WebP, AVIF, GIF).");
+  if (bytes.byteLength > MAX_IMAGE_BYTES) throw new ToolError("Gambar lebih dari 8 MB.");
+
+  const base = slugify(name ?? "") || "image";
+  const now = new Date();
+  const key = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${crypto.randomUUID().slice(0, 8)}-${base}.${IMAGE_EXT[mime]}`;
+  const publicUrl = await uploadPublic(key, bytes, mime);
+  const [row] = await db
+    .insert(schema.media)
+    .values({ key, url: publicUrl, mime, size: bytes.byteLength, alt: mergeLocalized(undefined, alt) })
+    .returning();
+  await logActivity(actor, "create", "media", row.id, base);
+  return { id: row.id, url: row.url, alt: row.alt };
+}
 
 const uploadMedia = defineTool({
   name: "upload_media_from_url",
   title: "Unggah gambar dari URL",
   description:
-    "Mengunduh gambar dari URL publik (JPG, PNG, WebP, AVIF, GIF, maks 8 MB) ke penyimpanan media CMS. Kembalikan id media untuk coverId/gallery/photoId. Pastikan gambar boleh dipakai (lisensi).",
+    "Mengunduh gambar dari URL publik (JPG, PNG, WebP, AVIF, GIF, maks 8 MB) ke penyimpanan media CMS. Kembalikan id media untuk coverId/gallery/photoId. Pastikan gambar boleh dipakai (lisensi). Untuk file yang Anda buat sendiri, pakai create_media_upload atau upload_media_base64.",
   input: z.object({
     url: z.url().describe("URL http(s) gambar."),
-    alt: localizedInput.optional().describe("Teks alternatif yang menjelaskan isi gambar."),
-    filename: z.string().optional().describe("Nama file yang mudah dibaca, tanpa ekstensi."),
+    alt: altInput,
+    filename: filenameInput,
   }),
   run: async ({ url, alt, filename }, { actor }) => {
     const target = new URL(url);
@@ -658,22 +693,79 @@ const uploadMedia = defineTool({
     }
     const res = await fetch(target, { redirect: "follow", signal: AbortSignal.timeout(20_000) });
     if (!res.ok) throw new ToolError(`Gagal mengunduh gambar (HTTP ${res.status}).`);
-    const mime = (res.headers.get("content-type") ?? "").split(";")[0].trim();
-    const ext = ALLOWED_IMAGES[mime];
-    if (!ext) throw new ToolError(`Tipe file ${mime || "tidak dikenal"} tidak didukung.`);
+    if (Number(res.headers.get("content-length")) > MAX_IMAGE_BYTES) throw new ToolError("Gambar lebih dari 8 MB.");
     const bytes = new Uint8Array(await res.arrayBuffer());
-    if (bytes.byteLength > MAX_IMAGE_BYTES) throw new ToolError("Gambar lebih dari 8 MB.");
+    return storeImage(bytes, filename ?? target.pathname.split("/").pop()?.replace(/\.[^.]+$/, ""), alt, actor);
+  },
+});
 
-    const base = slugify(filename ?? target.pathname.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "") || "image";
-    const now = new Date();
-    const key = `uploads/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${crypto.randomUUID().slice(0, 8)}-${base}.${ext}`;
-    const publicUrl = await uploadPublic(key, bytes, mime);
-    const [row] = await db
-      .insert(schema.media)
-      .values({ key, url: publicUrl, mime, size: bytes.byteLength, alt: mergeLocalized(undefined, alt) })
-      .returning();
-    await logActivity(actor, "create", "media", row.id, base);
-    return { id: row.id, url: row.url, alt: row.alt };
+const createMediaUpload = defineTool({
+  name: "create_media_upload",
+  title: "Siapkan unggahan file gambar",
+  description:
+    "Untuk gambar yang ada di komputer atau sandbox Anda (misalnya buatan sendiri). Mengembalikan URL unggah sekali pakai yang berlaku 15 menit. Kirim file dengan HTTP PUT ke uploadUrl memakai header Content-Type yang sama persis (contoh perintah curl ada di hasil), lalu panggil finalize_media_upload dengan uploadId untuk mendapat id media. Maks 8 MB.",
+  input: z.object({
+    contentType: z.enum(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]).describe("Tipe file yang akan diunggah."),
+  }),
+  run: async ({ contentType }) => {
+    // Uploads that were never finalized are cleared out here instead of by a cron job.
+    await deleteStalePublic(INCOMING_PREFIX, 24 * 60 * 60_000);
+    const uploadId = crypto.randomUUID();
+    const uploadUrl = await presignPublicUpload(`${INCOMING_PREFIX}${uploadId}`, contentType, UPLOAD_TTL_SECONDS);
+    return {
+      uploadId,
+      uploadUrl,
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      expiresAt: new Date(Date.now() + UPLOAD_TTL_SECONDS * 1000).toISOString(),
+      example: `curl -X PUT -H "Content-Type: ${contentType}" --data-binary @gambar.${IMAGE_EXT[contentType]} "<uploadUrl>"`,
+      next: "Setelah PUT berhasil (HTTP 200), panggil finalize_media_upload dengan uploadId ini.",
+    };
+  },
+});
+
+const finalizeMediaUpload = defineTool({
+  name: "finalize_media_upload",
+  title: "Selesaikan unggahan gambar",
+  description:
+    "Memeriksa file yang sudah dikirim ke uploadUrl dari create_media_upload, memindahkannya ke media CMS, dan mengembalikan id media untuk coverId/gallery/photoId.",
+  input: z.object({
+    uploadId: z.uuid().describe("uploadId dari create_media_upload."),
+    alt: altInput,
+    filename: filenameInput,
+  }),
+  run: async ({ uploadId, alt, filename }, { actor }) => {
+    const key = `${INCOMING_PREFIX}${uploadId}`;
+    const size = await publicObjectSize(key);
+    if (size === null) {
+      throw new ToolError("File belum ada. Pastikan PUT ke uploadUrl berhasil (HTTP 200) dan belum lewat 15 menit, atau sudah pernah difinalisasi.");
+    }
+    try {
+      if (size > MAX_IMAGE_BYTES) throw new ToolError("Gambar lebih dari 8 MB.");
+      return await storeImage(await readPublic(key), filename, alt, actor);
+    } finally {
+      await deletePublic(key);
+    }
+  },
+});
+
+const uploadMediaBase64 = defineTool({
+  name: "upload_media_base64",
+  title: "Unggah gambar dari base64",
+  description:
+    "Cadangan untuk gambar kecil (maks 2 MB) bila Anda tidak bisa menjalankan HTTP PUT. Kirim isi file sebagai base64 (boleh dengan awalan data:image/...;base64,). Untuk file lebih besar pakai create_media_upload.",
+  input: z.object({
+    data: z.string().describe("Isi file gambar dalam base64."),
+    alt: altInput,
+    filename: filenameInput,
+  }),
+  run: async ({ data, alt, filename }, { actor }) => {
+    const encoded = data.replace(/^data:[^,]*,/, "").replace(/\s+/g, "");
+    if (!/^[A-Za-z0-9+/_-]+={0,2}$/.test(encoded)) throw new ToolError("data bukan base64 yang valid.");
+    if (encoded.length > Math.ceil((MAX_BASE64_BYTES * 4) / 3) + 4) {
+      throw new ToolError("Gambar lebih dari 2 MB. Pakai create_media_upload untuk file besar.");
+    }
+    return storeImage(new Uint8Array(Buffer.from(encoded, "base64")), filename, alt, actor);
   },
 });
 
@@ -758,6 +850,9 @@ export const tools: ToolDef[] = [
   saveCategory,
   updateSettings,
   uploadMedia,
+  createMediaUpload,
+  finalizeMediaUpload,
+  uploadMediaBase64,
   updateMediaAlt,
   setInquiryStatus,
   deleteContent,

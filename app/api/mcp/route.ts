@@ -12,7 +12,7 @@ const INSTRUCTIONS = `CMS Ryuartistry: studio kreatif (AI, game, software, kreat
 - Panggil cms_overview dulu untuk melihat kategori, jumlah konten, dan hal yang perlu diperbaiki.
 - Semua teks yang tampil di situs diisi dua bahasa { id, en }. Tulis Indonesia yang natural, bukan terjemahan kaku.
 - Konten baru dibuat sebagai draft kecuali pengguna meminta langsung terbit. Sebutkan adminUrl hasil simpan agar pengguna bisa meninjau.
-- Untuk gambar: upload_media_from_url dulu, lalu pakai id-nya di coverId/gallery/photoId. Isi alt dua bahasa.
+- Untuk gambar: unggah dulu, lalu pakai id-nya di coverId/gallery/photoId. Isi alt dua bahasa. Gambar di internet: upload_media_from_url. File buatan sendiri: create_media_upload, PUT file ke uploadUrl, lalu finalize_media_upload; tanpa akses HTTP, upload_media_base64 (maks 2 MB).
 - Perubahan tampil di situs segera setelah disimpan. Hapus permanen hanya setelah pengguna setuju.`;
 
 const toolList = tools.map((t) => ({

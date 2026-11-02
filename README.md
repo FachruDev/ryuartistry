@@ -112,6 +112,8 @@ Di balik layar `lib/ai/oauth.ts` menjalankan server OAuth 2.1 kecil: metadata di
 
 3. Minta dalam bahasa biasa: "Buat 3 karya contoh untuk kategori game, dua bahasa, simpan sebagai draft."
 
+Gambar bisa masuk tiga cara: `upload_media_from_url` untuk gambar publik di internet; `create_media_upload` → HTTP PUT ke URL sekali pakai (15 menit, folder `incoming/mcp/` di bucket) → `finalize_media_upload` untuk file buatan sendiri; dan `upload_media_base64` (maks 2 MB) bila Claude tidak bisa menjalankan HTTP. Isi file selalu diperiksa (JPG, PNG, WebP, AVIF, GIF, maks 8 MB) sebelum masuk ke `uploads/`. Unggahan yang tidak difinalisasi dihapus setelah sehari.
+
 Setiap perubahan oleh AI tercatat di **Aktivitas terbaru** dengan nama tokennya, dan cache halaman publik langsung diperbarui. Token bisa dicabut kapan saja dari halaman yang sama.
 
 ## Deploy ke Vercel
