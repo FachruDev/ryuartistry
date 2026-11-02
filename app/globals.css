@@ -118,10 +118,13 @@ body {
   border-radius: 999px;
 }
 
-/* CMS text fields draw their own focus ring, so keep their shape instead of the site's pill outline. */
-.cms :is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus-visible {
+/*
+ * Text fields show focus with their own border or ring, so skip the accent outline and keep
+ * the shape their classes give them (revert-layer falls back to the Tailwind utilities).
+ */
+:is(input:not([type="checkbox"], [type="radio"]), textarea, select, [contenteditable="true"]):focus-visible {
   outline: none;
-  border-radius: 0.375rem;
+  border-radius: revert-layer;
 }
 
 /* Component classes live in a layer so Tailwind utilities can still override them. */
