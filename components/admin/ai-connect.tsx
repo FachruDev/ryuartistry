@@ -28,10 +28,10 @@ export function CodeBlock({ title, code }: { title: string; code: string }) {
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-ink-deep">
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2">
-        <span className="text-xs font-semibold text-paper/70">{title}</span>
+        <span className="text-xs font-semibold text-white/70">{title}</span>
         <CopyButton value={code} />
       </div>
-      <pre className="overflow-x-auto px-4 py-3 text-[13px] leading-relaxed text-paper">
+      <pre className="overflow-x-auto px-4 py-3 text-[13px] leading-relaxed text-white/90">
         <code>{code}</code>
       </pre>
     </div>

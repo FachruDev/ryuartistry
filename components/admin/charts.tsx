@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-// The CMS is always light, so chart colors can be fixed values from the Naga palette.
-const SERIES = "#2f4f8f"; // --glow
-const PREVIOUS = "#b4b1a6";
-const GRID = "#e7e4da";
+// Theme tokens from globals.css, so charts follow the light/dark switch.
+const SERIES = "var(--glow)";
+const PREVIOUS = "var(--chart-previous)";
+const GRID = "var(--chart-grid)";
+const tint = (opacity: number) => `color-mix(in oklab, ${SERIES} ${opacity * 100}%, transparent)`;
 
 export const compact = (n: number) =>
   new Intl.NumberFormat("id-ID", { notation: n >= 10_000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(n);
@@ -108,12 +109,12 @@ export function TrendChart({ points, name, previousName = "Periode sebelumnya", 
             <path d={line("value")} fill="none" stroke={SERIES} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
             {hover !== null && (
               <>
-                <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} stroke="#14213d" strokeOpacity={0.25} />
-                <circle cx={x(hover)} cy={y(points[hover].value)} r={4.5} fill={SERIES} stroke="#fbfaf6" strokeWidth={2} />
+                <line x1={x(hover)} x2={x(hover)} y1={pad.top} y2={pad.top + innerH} stroke="var(--ink)" strokeOpacity={0.25} />
+                <circle cx={x(hover)} cy={y(points[hover].value)} r={4.5} fill={SERIES} stroke="var(--paper-raised)" strokeWidth={2} />
               </>
             )}
             {hover === null && points.length > 0 && (
-              <circle cx={x(points.length - 1)} cy={y(points[points.length - 1].value)} r={4} fill={SERIES} stroke="#fbfaf6" strokeWidth={2} />
+              <circle cx={x(points.length - 1)} cy={y(points[points.length - 1].value)} r={4} fill={SERIES} stroke="var(--paper-raised)" strokeWidth={2} />
             )}
           </svg>
         )}
@@ -176,7 +177,7 @@ export function BarList({ rows, valueLabel, empty = "Belum ada data." }: { rows:
           const inner = (
             <>
               <span
-                className="absolute inset-y-0 left-0 rounded-md bg-mizu/60 transition-[width] duration-500"
+                className="absolute inset-y-0 left-0 rounded-md bg-mizu/60 dark:bg-mizu/20 transition-[width] duration-500"
                 style={{ width: `${Math.max(2, (r.value / max) * 100)}%` }}
               />
               <span className="relative min-w-0 flex-1 truncate">{r.label}</span>
@@ -235,7 +236,7 @@ export function HourHeatmap({ cells }: { cells: { dow: number; hour: number; vie
                     onPointerEnter={() => setHover({ dow: d, hour, views })}
                     onFocus={() => setHover({ dow: d, hour, views })}
                     className="h-[22px] rounded-[4px] outline-offset-1"
-                    style={{ background: o ? `rgb(47 79 143 / ${o})` : GRID }}
+                    style={{ background: o ? tint(o) : GRID }}
                     aria-label={`${day} ${hour}.00: ${views} tayangan`}
                   />
                 );
@@ -253,7 +254,7 @@ export function HourHeatmap({ cells }: { cells: { dow: number; hour: number; vie
         <span className="inline-flex items-center gap-1">
           Sepi
           {steps.map((s) => (
-            <span key={s} className="size-3 rounded-[3px]" style={{ background: `rgb(47 79 143 / ${s})` }} />
+            <span key={s} className="size-3 rounded-[3px]" style={{ background: tint(s) }} />
           ))}
           Ramai
         </span>

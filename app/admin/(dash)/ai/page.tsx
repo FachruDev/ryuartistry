@@ -49,26 +49,26 @@ export default async function AiPage() {
         description="Hubungkan Claude ke CMS ini lewat MCP. Claude memakai langganan Anda (Pro/Max) di aplikasi Claude atau Claude Code, jadi tidak ada API berbayar per pemakaian."
       />
 
-      <section className="relative overflow-hidden rounded-3xl bg-ink p-6 text-paper sm:p-8">
+      <section className="relative overflow-hidden rounded-3xl bg-ink-deep p-6 text-white sm:p-8">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-wisteria/30 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 size-72 rounded-full bg-mizu/20 blur-3xl" />
-        <p className="relative text-sm font-semibold text-paper/70">Cara kerjanya</p>
+        <p className="relative text-sm font-semibold text-white/70">Cara kerjanya</p>
         <ol className="relative mt-4 grid gap-4 md:grid-cols-3">
           {steps.map(({ icon: Icon, title, text }, i) => (
             <li key={title} className="rounded-2xl bg-white/[0.06] p-4 ring-1 ring-white/10">
               <span className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-lg bg-paper text-ink">
+                <span className="grid size-8 place-items-center rounded-lg bg-white text-ink-deep">
                   <Icon size={16} weight="bold" />
                 </span>
-                <span className="text-xs font-bold text-paper/50">0{i + 1}</span>
+                <span className="text-xs font-bold text-white/50">0{i + 1}</span>
               </span>
               <p className="mt-3 font-semibold">{title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-paper/70">{text}</p>
+              <p className="mt-1 text-sm leading-relaxed text-white/70">{text}</p>
             </li>
           ))}
         </ol>
-        <p className="relative mt-5 text-sm text-paper/70">
-          Alamat MCP: <code className="rounded bg-white/10 px-1.5 py-0.5 text-paper">{endpoint}</code>
+        <p className="relative mt-5 text-sm text-white/70">
+          Alamat MCP: <code className="rounded bg-white/10 px-1.5 py-0.5 text-white">{endpoint}</code>
           {host.startsWith("localhost") && " · hanya aktif selama server lokal berjalan. Setelah deploy, buat token dari CMS produksi."}
         </p>
       </section>

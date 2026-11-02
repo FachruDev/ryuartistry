@@ -18,8 +18,8 @@ const grants = [
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <main className="grid min-h-screen place-items-center bg-ink px-4 py-10">
-      <div className="w-full max-w-md rounded-xl bg-paper p-8 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)]">
+    <main className="grid min-h-screen place-items-center bg-ink-deep px-4 py-10">
+      <div className="w-full max-w-md rounded-xl bg-paper p-8 ring-1 ring-line shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)]">
         <p className="display text-3xl text-ink">ryuartistry</p>
         {children}
       </div>

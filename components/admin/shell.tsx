@@ -6,6 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, List, MagnifyingGlass, SignOut, X } from "@phosphor-icons/react";
 import { isActive, navGroups } from "./nav-items";
 import { CommandPalette, openPalette } from "./command-palette";
+import { ThemeToggle } from "@/components/site/theme-toggle";
 
 type User = { name: string; email: string; role: string };
 
@@ -164,10 +165,14 @@ export function AdminShell({
             <span className="flex-1 truncate">Cari konten atau lompat ke…</span>
             <kbd className="hidden rounded border border-line bg-paper px-1.5 py-0.5 font-sans text-[11px] font-semibold sm:inline">Ctrl K</kbd>
           </button>
+          <ThemeToggle
+            label="Ganti tema terang/gelap"
+            className="ml-auto size-10 shrink-0 rounded-lg border border-line bg-paper-raised text-ink/80 transition-colors hover:border-ink/25 hover:text-ink"
+          />
           <a
             href="/"
             target="_blank"
-            className="ml-auto hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-ink/80 hover:bg-ink/5 sm:inline-flex"
+            className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-ink/80 hover:bg-ink/5 sm:inline-flex"
           >
             Lihat situs <ArrowUpRight size={14} weight="bold" />
           </a>

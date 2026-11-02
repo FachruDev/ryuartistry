@@ -5,7 +5,7 @@
 /*
  * Ryuartistry "Naga" — rice paper, blue-black ink, and a vermilion seal red.
  * Each discipline owns a pastel: AI wisteria, Game jade, Software mizu (water), Creative sakura; yuzu is the CTA.
- * The site sets data-theme="light" | "dark" on <html>; the CMS never sets it and stays light.
+ * The site and the CMS set data-theme="light" | "dark" on <html> (shared choice, see lib/theme.ts).
  */
 :root {
   color-scheme: light;
@@ -38,6 +38,8 @@
   --scale: #f4c94a;
   --danger: #c2415f;
   --success: #2f8a6b;
+  --chart-previous: #b4b1a6;
+  --chart-grid: #e7e4da;
 
   --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -65,6 +67,13 @@
   --sparkle: #e8cf6c;
   --nav: rgb(23 33 51 / 0.7);
   --shade: 0 0 0;
+
+  --ink-deep: #070c16;
+  --glow: #8fb0ee;
+  --danger: #f0809a;
+  --success: #5cc49c;
+  --chart-previous: #56627a;
+  --chart-grid: #222d42;
 }
 
 @theme inline {

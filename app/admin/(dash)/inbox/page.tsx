@@ -61,7 +61,7 @@ export default async function InboxPage({ searchParams }: PageProps<"/admin/inbo
                   {m.company && <p className="text-sm text-muted">Perusahaan: {m.company}</p>}
                   <p className="whitespace-pre-wrap leading-relaxed">{m.message}</p>
                   <div className="flex flex-wrap gap-2">
-                    <a href={`mailto:${m.email}`} className="inline-flex items-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-paper hover:bg-ink-deep">
+                    <a href={`mailto:${m.email}`} className="inline-flex items-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-paper hover:bg-ink/85">
                       Balas via email
                     </a>
                     {m.status === "new" && (

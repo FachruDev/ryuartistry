@@ -8,5 +8,5 @@ export function buttonClass(variant: "primary" | "danger" | "ghost" = "primary")
     "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
   if (variant === "danger") return `${base} bg-danger text-white hover:bg-danger/90`;
   if (variant === "ghost") return `${base} border border-line bg-paper-raised text-text hover:border-ink/40`;
-  return `${base} bg-ink text-paper hover:bg-ink-deep`;
+  return `${base} bg-ink text-paper hover:bg-ink/85`;
 }

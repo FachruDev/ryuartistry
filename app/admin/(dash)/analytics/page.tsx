@@ -162,7 +162,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<"/admin/
                     <span className="flex-1">{meta.label}</span>
                     <span className="font-semibold tabular-nums">{Math.round(share * 100)}%</span>
                   </div>
-                  <div className="mt-1.5 h-2 rounded-full bg-mizu/40">
+                  <div className="mt-1.5 h-2 rounded-full bg-mizu/40 dark:bg-mizu/15">
                     <div className="h-2 rounded-full bg-glow" style={{ width: `${share * 100}%` }} />
                   </div>
                 </li>
