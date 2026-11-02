@@ -25,8 +25,8 @@ const examples = [
 ];
 
 const steps = [
-  { icon: Key, title: "Buat token", text: "Satu token untuk tiap perangkat atau orang. Bisa dicabut kapan saja." },
-  { icon: Plugs, title: "Hubungkan Claude", text: "Tempel satu perintah di Claude Code, atau konfigurasi di Claude Desktop." },
+  { icon: Plugs, title: "Hubungkan Claude", text: "Tambahkan sebagai connector di Claude, atau pakai token di Claude Code." },
+  { icon: Key, title: "Izinkan akses", text: "Masuk dengan akun admin CMS dan setujui. Akses bisa dicabut kapan saja." },
   { icon: ChatCircleText, title: "Minta dalam bahasa sehari-hari", text: "Claude membaca, menulis, dan merapikan konten langsung di CMS." },
 ];
 
@@ -73,7 +73,7 @@ export default async function AiPage() {
         </p>
       </section>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_400px]">
         <div className="space-y-4">
           <Card title="Token akses" description={`${active.length} token aktif. Token memberi akses penuh untuk mengubah konten, simpan seperti password.`}>
             <TokenCreator endpoint={endpoint} canManage={user.role === "admin"} />
@@ -81,7 +81,11 @@ export default async function AiPage() {
               <ul className="mt-5 divide-y divide-line border-t border-line">
                 {tokens.map((t) => (
                   <li key={t.id} className="flex flex-wrap items-center gap-3 py-3">
-                    <Key size={16} className={t.revokedAt ? "text-muted/50" : "text-ink"} />
+                    {t.oauthClientId ? (
+                      <Plugs size={16} className={t.revokedAt ? "text-muted/50" : "text-ink"} />
+                    ) : (
+                      <Key size={16} className={t.revokedAt ? "text-muted/50" : "text-ink"} />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className={`font-semibold ${t.revokedAt ? "text-muted line-through" : ""}`}>{t.name}</p>
                       <p className="text-xs text-muted">
@@ -102,9 +106,31 @@ export default async function AiPage() {
             )}
           </Card>
 
-          <Card title="Cara menghubungkan" description="Ganti ryu_TOKEN_ANDA dengan token yang Anda buat.">
+          <Card title="Cara menghubungkan" description="Connector untuk aplikasi Claude, atau token untuk Claude Code.">
             <div className="space-y-4">
-              <CodeBlock title="Claude Code (disarankan)" code={sample.claudeCode} />
+              <div className="rounded-xl border border-line bg-paper p-4">
+                <p className="font-semibold">Connector Claude (web, Desktop, dan mobile)</p>
+                <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-ink/80">
+                  <li>
+                    Di Claude, buka <strong>Settings → Connectors → Add custom connector</strong>.
+                  </li>
+                  <li className="space-y-1.5">
+                    <span>
+                      Isi nama <strong>Ryuartistry CMS</strong> dan URL berikut. Kolom OAuth Client ID/Secret dibiarkan kosong.
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <code className="min-w-0 flex-1 truncate rounded bg-paper-raised px-2 py-1 text-xs">{endpoint}</code>
+                      <CopyButton value={endpoint} />
+                    </span>
+                  </li>
+                  <li>Klik Connect, masuk dengan akun admin CMS, lalu pilih Izinkan akses.</li>
+                </ol>
+                <p className="mt-2 text-xs text-muted">
+                  Butuh paket Claude berbayar. Connector yang tersambung muncul di daftar token di atas sebagai “(connector)”.
+                  {host.startsWith("localhost") && " Claude tidak bisa menjangkau localhost, jadi pakai alamat produksi."}
+                </p>
+              </div>
+              <CodeBlock title="Claude Code (ganti ryu_TOKEN_ANDA dengan token Anda)" code={sample.claudeCode} />
               <p className="text-sm text-muted">
                 Setelah itu ketik <code className="rounded bg-paper px-1">/mcp</code> di Claude Code untuk memastikan <strong>ryuartistry</strong> terhubung.
               </p>

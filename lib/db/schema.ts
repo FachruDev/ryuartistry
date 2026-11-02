@@ -241,6 +241,31 @@ export const pageViews = pgTable(
   (t) => [index("page_views_created_at_idx").on(t.createdAt), index("page_views_path_idx").on(t.path)],
 );
 
+/** Apps that registered themselves for OAuth (RFC 7591), e.g. a Claude custom connector. */
+export const oauthClients = pgTable("oauth_clients", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  redirectUris: jsonb("redirect_uris").$type<string[]>().notNull(),
+  /** Null for public clients that authenticate with PKCE only. */
+  secretHash: text("secret_hash"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/** Single-use authorization codes, valid for a few minutes. Only the SHA-256 hash is stored. */
+export const oauthCodes = pgTable("oauth_codes", {
+  codeHash: text("code_hash").primaryKey(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthClients.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  redirectUri: text("redirect_uri").notNull(),
+  codeChallenge: text("code_challenge").notNull(),
+  scope: text("scope"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
 /** Personal access tokens for the MCP endpoint. Only the SHA-256 hash is stored. */
 export const apiTokens = pgTable("api_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -248,6 +273,8 @@ export const apiTokens = pgTable("api_tokens", {
   tokenHash: text("token_hash").notNull().unique(),
   prefix: text("prefix").notNull(),
   createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+  /** Set when the token was issued through OAuth instead of created by hand. */
+  oauthClientId: text("oauth_client_id").references(() => oauthClients.id, { onDelete: "set null" }),
   lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -293,4 +320,5 @@ export type Category = typeof categories.$inferSelect;
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type PageView = typeof pageViews.$inferSelect;
 export type ApiToken = typeof apiTokens.$inferSelect;
+export type OAuthClient = typeof oauthClients.$inferSelect;
 export type Activity = typeof activityLog.$inferSelect;

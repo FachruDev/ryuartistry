@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import { safeAdminPath } from "@/lib/admin-path";
 import { defaultLocale, isLocale, type Locale } from "@/lib/i18n";
 
 function preferredLocale(request: NextRequest): Locale {
@@ -19,10 +20,13 @@ export function proxy(request: NextRequest) {
     const isLogin = pathname === "/admin/login";
     const hasSession = Boolean(getSessionCookie(request));
     if (!hasSession && !isLogin) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      const login = new URL("/admin/login", request.url);
+      // Come back here after signing in, e.g. to finish connecting Claude on /admin/authorize.
+      if (pathname !== "/admin") login.searchParams.set("next", pathname + request.nextUrl.search);
+      return NextResponse.redirect(login);
     }
     if (hasSession && isLogin) {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      return NextResponse.redirect(new URL(safeAdminPath(request.nextUrl.searchParams.get("next")), request.url));
     }
     return NextResponse.next();
   }

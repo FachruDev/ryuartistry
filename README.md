@@ -93,7 +93,15 @@ Halaman **Analitik** menampilkan pengunjung, tayangan, halaman per kunjungan, wa
 
 ## Asisten AI (MCP)
 
-`/api/mcp` adalah server [MCP](https://modelcontextprotocol.io) tanpa state (Streamable HTTP, JSON). Claude Code atau Claude Desktop terhubung ke sini dan menjalankan tool seperti `cms_overview`, `save_project`, `save_post`, `upload_media_from_url`, dan `get_analytics` (daftar lengkap di `lib/mcp/tools.ts`). AI-nya berjalan di aplikasi Claude milik Anda; server ini hanya menyediakan tool, jadi tidak ada biaya API.
+`/api/mcp` adalah server [MCP](https://modelcontextprotocol.io) tanpa state (Streamable HTTP, JSON). Aplikasi Claude (web, Desktop, mobile) atau Claude Code terhubung ke sini dan menjalankan tool seperti `cms_overview`, `save_project`, `save_post`, `upload_media_from_url`, dan `get_analytics` (daftar lengkap di `lib/mcp/tools.ts`). AI-nya berjalan di aplikasi Claude milik Anda; server ini hanya menyediakan tool, jadi tidak ada biaya API.
+
+### Sebagai connector Claude (OAuth)
+
+Di Claude buka **Settings → Connectors → Add custom connector**, isi URL `https://domain-anda/api/mcp` (kolom OAuth Client ID/Secret dibiarkan kosong), klik **Connect**, masuk dengan akun admin CMS, lalu **Izinkan akses**. Connector ini otomatis tersedia di claude.ai, Claude Desktop, dan aplikasi mobile.
+
+Di balik layar `lib/ai/oauth.ts` menjalankan server OAuth 2.1 kecil: metadata di `/.well-known/oauth-protected-resource` dan `/.well-known/oauth-authorization-server`, pendaftaran klien otomatis di `/api/oauth/register`, halaman persetujuan `/admin/authorize` (hanya admin, PKCE S256 wajib), dan `/api/oauth/token`. Token yang diterbitkan adalah token `ryu_` biasa yang ditandai "(connector)" di daftar token, jadi dicabut dengan cara yang sama. Menghubungkan ulang aplikasi yang sama mencabut token lamanya.
+
+### Dengan token (Claude Code)
 
 1. Buka CMS → **Asisten AI**, buat token (hanya admin). Token tampil sekali; yang disimpan hanya hash-nya.
 2. Tempel perintah yang muncul, misalnya:

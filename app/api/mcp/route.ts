@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { originOf } from "@/lib/ai/oauth";
 import { verifyBearer } from "@/lib/ai/tokens";
 import { ToolError, tools } from "@/lib/mcp/tools";
 
@@ -78,9 +79,11 @@ async function handle(message: RpcRequest, actorName: string) {
 export async function POST(request: Request) {
   const token = await verifyBearer(request.headers.get("authorization"));
   if (!token) {
+    // resource_metadata starts the OAuth flow for clients such as Claude custom connectors.
+    const metadata = `${originOf(request.headers)}/.well-known/oauth-protected-resource`;
     return Response.json(fail(null, -32001, "Token tidak valid atau sudah dicabut. Buat token di CMS → Asisten AI."), {
       status: 401,
-      headers: { "WWW-Authenticate": 'Bearer realm="ryuartistry-cms"' },
+      headers: { "WWW-Authenticate": `Bearer realm="ryuartistry-cms", resource_metadata="${metadata}"` },
     });
   }
 

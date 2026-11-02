@@ -6,13 +6,14 @@ import { db, schema } from "@/lib/db";
 const hash = (token: string) => createHash("sha256").update(token).digest("hex");
 
 /** Creates a token and returns the plain value. It is shown once and never stored. */
-export async function issueToken(name: string, userId: string) {
+export async function issueToken(name: string, userId: string, oauthClientId?: string) {
   const token = `ryu_${randomBytes(24).toString("base64url")}`;
   await db.insert(schema.apiTokens).values({
     name,
     tokenHash: hash(token),
     prefix: token.slice(0, 10),
     createdBy: userId,
+    oauthClientId,
   });
   return token;
 }

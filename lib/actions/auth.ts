@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
+import { safeAdminPath } from "@/lib/admin-path";
 import { str, type FormState } from "@/lib/forms";
 
 export async function signIn(_prev: FormState, form: FormData): Promise<FormState> {
@@ -17,7 +18,7 @@ export async function signIn(_prev: FormState, form: FormData): Promise<FormStat
     if (error instanceof APIError) return { error: "Email atau password salah." };
     throw error;
   }
-  redirect("/admin");
+  redirect(safeAdminPath(str(form, "next")));
 }
 
 export async function signOut() {

@@ -22,6 +22,13 @@
       "when": 1793352978059,
       "tag": "0002_analytics_ai_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793587934101,
+      "tag": "0003_oauth_connector",
+      "breakpoints": true
     }
   ]
 }
