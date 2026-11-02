@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { asc, eq, inArray } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
@@ -6,6 +7,8 @@ import { PageHeader } from "@/components/admin/page-header";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { ProjectForm } from "@/components/admin/forms/project-form";
 import { requireUser } from "@/lib/auth";
+import { buttonClass } from "@/components/admin/styles";
+import { DownloadSimple } from "@phosphor-icons/react/ssr";
 
 export const metadata = { title: "Edit karya" };
 export const instant = false;
@@ -36,6 +39,9 @@ export default async function EditProjectPage({ params }: PageProps<"/admin/proj
         back={{ href: "/admin/projects", label: "Karya" }}
         actions={
           <>
+            <Link href={`/admin/projects/${project.id}/releases`} className={buttonClass("ghost")}>
+              <DownloadSimple size={16} weight="bold" /> Rilis & unduhan
+            </Link>
             {project.status === "published" && (
               <a href={`/id/work/${project.slug}`} target="_blank" className="text-sm text-muted underline-offset-4 hover:underline">
                 Lihat di situs

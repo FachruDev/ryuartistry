@@ -13,6 +13,18 @@ import { isUniqueViolation, readingTime, slugify } from "@/lib/forms";
 import { logActivity, titleOf, type Actor, type Entity } from "@/lib/activity";
 import { getAnalytics } from "@/lib/analytics";
 import { getContentHealth } from "@/lib/cms-health";
+import { KEEP_BUILDS, PLATFORMS, changelogLines, formatBytes } from "@/lib/release-platforms";
+import {
+  ReleaseError,
+  checkVersion,
+  finalizeBuildUpload,
+  getProjectReleases,
+  prepareBuildUpload,
+  purgeProjectBuilds,
+  releaseLabel,
+  removeBuild,
+  removeRelease,
+} from "@/lib/releases";
 import { deletePublic, deleteStalePublic, presignPublicUpload, publicObjectSize, readPublic, uploadPublic } from "@/lib/storage";
 
 export class ToolError extends Error {}
@@ -799,6 +811,172 @@ const setInquiryStatus = defineTool({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Releases: downloadable builds (APK, EXE, …) with a changelog per version
+// ---------------------------------------------------------------------------
+
+/** Turns editor-facing release errors into tool errors the model can read and fix. */
+async function releaseCall<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof ReleaseError) throw new ToolError(error.message);
+    throw error;
+  }
+}
+
+async function resolveProject(value: string) {
+  const [row] = await db
+    .select({ id: schema.projects.id, title: schema.projects.title, slug: schema.projects.slug })
+    .from(schema.projects)
+    .where(z.uuid().safeParse(value).success ? eq(schema.projects.id, value) : eq(schema.projects.slug, value));
+  if (!row) throw new ToolError(`Karya "${value}" tidak ditemukan. Cari dengan list_content type "project".`);
+  return row;
+}
+
+const platformInput = z
+  .enum(PLATFORMS)
+  .describe("android (.apk), windows (.exe/.msi/.zip), macos (.dmg/.pkg/.zip), linux (.AppImage/.deb/.rpm/.tar.gz/.zip)");
+
+const listReleases = defineTool({
+  name: "list_releases",
+  title: "Daftar rilis karya",
+  description: `Semua versi sebuah karya (terbaru dulu) beserta catatan perubahan dan file per platform: ukuran, jumlah unduhan, dan apakah file masih tersedia atau sudah diarsipkan (hanya ${KEEP_BUILDS} build terbaru per platform yang disimpan).`,
+  input: z.object({ project: z.string().describe("id atau slug karya") }),
+  annotations: { readOnlyHint: true },
+  run: async ({ project }) => {
+    const target = await resolveProject(project);
+    const releases = await getProjectReleases(target.id);
+    return {
+      project: { id: target.id, slug: target.slug, title: target.title },
+      adminUrl: `/admin/projects/${target.id}/releases`,
+      releases: releases.map((r) => ({
+        id: r.id,
+        version: r.version,
+        status: r.status,
+        releasedAt: r.releasedAt,
+        changelog: r.changelog,
+        files: r.files.map((f) => ({
+          id: f.id,
+          platform: f.platform,
+          filename: f.filename,
+          size: formatBytes(f.size),
+          sha256: f.sha256,
+          downloads: f.downloads,
+          available: f.key !== null,
+        })),
+      })),
+    };
+  },
+});
+
+const saveRelease = defineTool({
+  name: "save_release",
+  title: "Simpan rilis",
+  description:
+    "Membuat atau memperbarui satu versi rilis karya (misalnya APK/EXE versi 2.0.1) beserta catatan perubahannya. Tanpa id = buat baru (wajib project dan version). Setelah itu unggah file dengan create_release_upload. Rilis baru sebaiknya draft sampai filenya ada, kecuali pengguna meminta langsung terbit.",
+  input: z.object({
+    id: z.uuid().optional().describe("id rilis untuk diperbarui"),
+    project: z.string().optional().describe("id atau slug karya (wajib saat membuat)"),
+    version: z.string().optional().describe("Contoh 2.0.1 (awalan v dibuang)"),
+    changelog: localizedInput.optional().describe("Catatan perubahan per bahasa, satu perubahan per baris, tanpa HTML."),
+    status: statusInput.optional(),
+    releasedAt: z.iso.date().optional().describe("Tanggal rilis YYYY-MM-DD; bawaan hari ini"),
+  }),
+  run: async ({ id, project, version, changelog, status, releasedAt }, { actor }) => {
+    const current = id ? await db.query.releases.findFirst({ where: eq(schema.releases.id, id) }) : undefined;
+    if (id && !current) throw new ToolError(`Rilis ${id} tidak ditemukan.`);
+    const target = current ? await resolveProject(current.projectId) : project ? await resolveProject(project) : null;
+    if (!target) throw new ToolError("Sebutkan project (id atau slug) untuk rilis baru.");
+
+    const nextVersion = (version ?? current?.version ?? "").trim().replace(/^v(?=\d)/i, "");
+    await releaseCall(async () => checkVersion(nextVersion));
+    const values = {
+      version: nextVersion,
+      changelog: mergeLocalized(current?.changelog, changelog),
+      ...defined({ status, releasedAt: releasedAt ? new Date(`${releasedAt}T12:00:00+07:00`) : undefined }),
+    };
+
+    let row;
+    try {
+      [row] = current
+        ? await db.update(schema.releases).set(values).where(eq(schema.releases.id, current.id)).returning()
+        : await db.insert(schema.releases).values({ projectId: target.id, ...values }).returning();
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new ToolError(`Versi ${nextVersion} sudah ada untuk karya ini.`);
+      throw error;
+    }
+    await logActivity(actor, current ? "update" : "create", "release", row.id, releaseLabel(target, row.version));
+    invalidate("projects");
+    return {
+      id: row.id,
+      version: row.version,
+      status: row.status,
+      changelog: { id: changelogLines(row.changelog.id), en: changelogLines(row.changelog.en) },
+      adminUrl: `/admin/projects/${target.id}/releases`,
+      next: "Unggah file build dengan create_release_upload lalu finalize_release_upload.",
+    };
+  },
+});
+
+const createReleaseUpload = defineTool({
+  name: "create_release_upload",
+  title: "Siapkan unggahan build",
+  description: `Mengembalikan URL unggah sekali pakai (berlaku 1 jam) untuk file build sebuah rilis. Kirim file dengan HTTP PUT dan header Content-Type: application/octet-stream (contoh curl ada di hasil), lalu panggil finalize_release_upload. Maks 2 GB. Satu file per platform per rilis; mengunggah lagi mengganti file lama. Hanya ${KEEP_BUILDS} build terbaru per platform yang disimpan, file versi yang lebih lama dihapus otomatis (catatan versinya tetap).`,
+  input: z.object({
+    releaseId: z.uuid(),
+    platform: platformInput,
+    filename: z.string().min(1).describe("Nama file yang dilihat pengunduh, contoh CuanQuest-2.0.1.apk"),
+    size: z.number().int().positive().optional().describe("Ukuran file dalam byte, untuk cek batas lebih awal"),
+  }),
+  run: async (input) => {
+    const ticket = await releaseCall(() => prepareBuildUpload(input));
+    return {
+      ...ticket,
+      method: "PUT",
+      headers: { "Content-Type": ticket.contentType },
+      example: `curl -X PUT -H "Content-Type: ${ticket.contentType}" --data-binary @${ticket.filename} "<uploadUrl>"`,
+      next: "Setelah PUT berhasil (HTTP 200), panggil finalize_release_upload dengan uploadId ini.",
+    };
+  },
+});
+
+const finalizeReleaseUpload = defineTool({
+  name: "finalize_release_upload",
+  title: "Selesaikan unggahan build",
+  description:
+    "Memeriksa file yang sudah dikirim ke uploadUrl, menghitung SHA-256, mencatatnya di rilis, dan menerapkan batas penyimpanan. Laporkan ke pengguna versi mana yang filenya diarsipkan.",
+  input: z.object({ uploadId: z.string().min(10).describe("uploadId dari create_release_upload") }),
+  run: async ({ uploadId }, { actor }) => {
+    const { file, archived, project } = await releaseCall(() => finalizeBuildUpload(uploadId, actor));
+    invalidate("projects");
+    return {
+      fileId: file.id,
+      platform: file.platform,
+      filename: file.filename,
+      size: formatBytes(file.size),
+      sha256: file.sha256,
+      downloadUrl: `/api/download/${file.id}`,
+      archivedVersions: archived,
+      adminUrl: `/admin/projects/${project.id}/releases`,
+    };
+  },
+});
+
+const deleteRelease = defineTool({
+  name: "delete_release",
+  title: "Hapus rilis atau file build",
+  description:
+    "Menghapus permanen satu rilis (beserta semua filenya) atau hanya satu file build. Tidak bisa dibatalkan; konfirmasikan dulu dengan pengguna. Untuk menyembunyikan rilis, ubah status menjadi draft dengan save_release.",
+  input: z.object({ type: z.enum(["release", "file"]), id: z.uuid() }),
+  annotations: { destructiveHint: true },
+  run: async ({ type, id }, { actor }) => {
+    await releaseCall(() => (type === "release" ? removeRelease(id, actor) : removeBuild(id, actor)));
+    invalidate("projects");
+    return { deleted: id };
+  },
+});
+
 const deleteTables = {
   project: { table: schema.projects, tag: "projects", label: (r: { title: Localized }) => titleOf(r.title) },
   post: { table: schema.posts, tag: "posts", label: (r: { title: Localized }) => titleOf(r.title) },
@@ -829,6 +1007,7 @@ const deleteContent = defineTool({
       await logActivity(actor, "delete", "inquiry", id, row.name);
       return { deleted: id };
     }
+    if (type === "project") await purgeProjectBuilds(id);
     const target = deleteTables[type];
     const [row] = (await db.delete(target.table).where(eq(target.table.id, id)).returning()) as Record<string, unknown>[];
     if (!row) throw new ToolError(`${type} ${id} tidak ditemukan.`);
@@ -855,5 +1034,10 @@ export const tools: ToolDef[] = [
   uploadMediaBase64,
   updateMediaAlt,
   setInquiryStatus,
+  listReleases,
+  saveRelease,
+  createReleaseUpload,
+  finalizeReleaseUpload,
+  deleteRelease,
   deleteContent,
 ];

@@ -6,6 +6,9 @@ import { ToolError, tools } from "@/lib/mcp/tools";
 // A stateless MCP server over Streamable HTTP: every request is a JSON-RPC message
 // answered with plain JSON, so it runs as an ordinary serverless function.
 
+// Finalizing a build upload hashes the whole file, which takes a while for large builds.
+export const maxDuration = 300;
+
 const SUPPORTED_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 
 const INSTRUCTIONS = `CMS Ryuartistry: studio kreatif (AI, game, software, kreatif). Situs dua bahasa, Indonesia (id) dan Inggris (en).
@@ -13,6 +16,7 @@ const INSTRUCTIONS = `CMS Ryuartistry: studio kreatif (AI, game, software, kreat
 - Semua teks yang tampil di situs diisi dua bahasa { id, en }. Tulis Indonesia yang natural, bukan terjemahan kaku.
 - Konten baru dibuat sebagai draft kecuali pengguna meminta langsung terbit. Sebutkan adminUrl hasil simpan agar pengguna bisa meninjau.
 - Untuk gambar: unggah dulu, lalu pakai id-nya di coverId/gallery/photoId. Isi alt dua bahasa. Gambar di internet: upload_media_from_url. File buatan sendiri: create_media_upload, PUT file ke uploadUrl, lalu finalize_media_upload; tanpa akses HTTP, upload_media_base64 (maks 2 MB).
+- File unduhan (APK, EXE, dll.) per versi: save_release, lalu create_release_upload, PUT file ke uploadUrl, lalu finalize_release_upload. Hanya 5 build terbaru per platform yang disimpan; sebutkan ke pengguna versi yang filenya diarsipkan.
 - Perubahan tampil di situs segera setelah disimpan. Hapus permanen hanya setelah pengguna setuju.`;
 
 const toolList = tools.map((t) => ({

@@ -55,7 +55,16 @@ export async function getProjectBySlug(slug: string) {
   cacheTag(tags.projects);
   const project = await db.query.projects.findFirst({
     where: and(published(schema.projects), eq(schema.projects.slug, slug)),
-    with: { cover: true, category: true },
+    with: {
+      cover: true,
+      category: true,
+      releases: {
+        where: eq(schema.releases.status, "published"),
+        orderBy: [desc(schema.releases.releasedAt), desc(schema.releases.createdAt)],
+        columns: { id: true, version: true, changelog: true, releasedAt: true },
+        with: { files: { columns: { id: true, platform: true, filename: true, size: true, sha256: true, key: true } } },
+      },
+    },
   });
   if (!project) return null;
 
@@ -74,7 +83,12 @@ export async function getProjectBySlug(slug: string) {
     .filter((m) => m !== undefined);
   const index = all.findIndex((p) => p.slug === slug);
   const next = all.length > 1 ? all[(index + 1) % all.length] : null;
-  return { ...project, galleryMedia: gallery, next };
+  // Only whether a build can still be downloaded matters to the page, not where it is stored.
+  const releases = project.releases.map(({ files, ...release }) => ({
+    ...release,
+    files: files.map(({ key, ...file }) => ({ ...file, available: key !== null })),
+  }));
+  return { ...project, releases, galleryMedia: gallery, next };
 }
 
 export async function getCategories(kind: "project" | "post") {

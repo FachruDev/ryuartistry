@@ -10,6 +10,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createHash } from "node:crypto";
 
 export const PUBLIC_BUCKET = "assets-public";
 
@@ -82,5 +83,71 @@ export async function deleteStalePublic(prefix: string, maxAgeMs: number) {
     await Promise.all(stale.map((o) => deletePublic(o.Key!)));
   } catch (error) {
     console.error("stale upload cleanup failed", error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Downloadable builds live in their own bucket. Visitors get short-lived signed links from
+// /api/download so every download is counted and saved under its real filename.
+// ---------------------------------------------------------------------------
+
+export const APP_BUCKET = "application";
+export const BUILD_CONTENT_TYPE = "application/octet-stream";
+
+/** A short-lived URL that lets a client PUT one build (any binary) to `key`. */
+export async function presignBuildUpload(key: string, expiresIn: number) {
+  return getSignedUrl(client, new PutObjectCommand({ Bucket: APP_BUCKET, Key: key, ContentType: BUILD_CONTENT_TYPE }), {
+    expiresIn,
+    signableHeaders: new Set(["content-type"]),
+  });
+}
+
+/** A short-lived link that downloads the build as an attachment named `filename`. */
+export async function presignBuildDownload(key: string, filename: string, contentType: string, expiresIn = 300) {
+  return getSignedUrl(
+    client,
+    new GetObjectCommand({
+      Bucket: APP_BUCKET,
+      Key: key,
+      ResponseContentType: contentType,
+      ResponseContentDisposition: `attachment; filename="${filename.replace(/"/g, "")}"`,
+    }),
+    { expiresIn },
+  );
+}
+
+export async function buildObjectSize(key: string) {
+  try {
+    const head = await client.send(new HeadObjectCommand({ Bucket: APP_BUCKET, Key: key }));
+    return head.ContentLength ?? 0;
+  } catch (error) {
+    if (error instanceof NotFound || error instanceof NoSuchKey) return null;
+    throw error;
+  }
+}
+
+/** SHA-256 of a stored build, streamed so large files never sit in memory. */
+export async function hashBuild(key: string) {
+  const res = await client.send(new GetObjectCommand({ Bucket: APP_BUCKET, Key: key }));
+  const hash = createHash("sha256");
+  for await (const chunk of res.Body as AsyncIterable<Uint8Array>) hash.update(chunk);
+  return hash.digest("hex");
+}
+
+export async function deleteBuild(key: string) {
+  await client.send(new DeleteObjectCommand({ Bucket: APP_BUCKET, Key: key }));
+}
+
+/** Deletes objects under `prefix` that are not `keep` and older than `maxAgeMs` (abandoned uploads). Best effort. */
+export async function deleteStaleBuilds(prefix: string, keep: (key: string) => boolean, maxAgeMs: number) {
+  try {
+    const list = await client.send(new ListObjectsV2Command({ Bucket: APP_BUCKET, Prefix: prefix, MaxKeys: 100 }));
+    const cutoff = Date.now() - maxAgeMs;
+    const stale = (list.Contents ?? []).filter(
+      (o) => o.Key && !keep(o.Key) && o.LastModified && o.LastModified.getTime() < cutoff,
+    );
+    await Promise.all(stale.map((o) => deleteBuild(o.Key!)));
+  } catch (error) {
+    console.error("stale build cleanup failed", error);
   }
 }

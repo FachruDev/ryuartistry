@@ -23,6 +23,7 @@ import {
 } from "@/lib/forms";
 import { checkBasics } from "./validate";
 import { logActivity, titleOf } from "@/lib/activity";
+import { purgeProjectBuilds } from "@/lib/releases";
 
 export async function saveProject(id: string | null, _prev: FormState, form: FormData): Promise<FormState> {
   const user = await requireUser();
@@ -82,6 +83,7 @@ export async function saveProject(id: string | null, _prev: FormState, form: For
 
 export async function deleteProject(id: string) {
   const user = await requireUser();
+  await purgeProjectBuilds(id);
   const [row] = await db.delete(schema.projects).where(eq(schema.projects.id, id)).returning({ title: schema.projects.title });
   if (row) await logActivity({ type: "user", name: user.name }, "delete", "project", id, titleOf(row.title));
   updateTag(tags.projects);

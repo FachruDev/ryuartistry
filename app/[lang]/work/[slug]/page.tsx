@@ -13,6 +13,7 @@ import { Reveal } from "@/components/site/reveal";
 import { DetailSkeleton } from "@/components/site/skeletons";
 import { ArrowIcon, BackLink, Dotted, Tag } from "@/components/site/ui";
 import { CoverFrame } from "@/components/site/work-card";
+import { Downloads } from "@/components/site/downloads";
 
 const PLACEHOLDER = "__none__";
 
@@ -117,6 +118,8 @@ async function ProjectDetail({ params }: Pick<PageProps<"/[lang]/work/[slug]">, 
           </dl>
         </Reveal>
       )}
+
+      <Downloads releases={project.releases} lang={lang} dict={dict.downloads} />
 
       {body && (
         <Reveal className="px-4 py-16 sm:px-8 md:py-24">

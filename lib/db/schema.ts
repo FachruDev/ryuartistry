@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -7,6 +8,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -199,6 +201,53 @@ export const inquiries = pgTable(
   (t) => [index("inquiries_status_idx").on(t.status), index("inquiries_email_idx").on(t.email)],
 );
 
+// ---------------------------------------------------------------------------
+// Downloadable builds (APK, EXE, …) attached to a project
+// ---------------------------------------------------------------------------
+
+export const releasePlatform = pgEnum("release_platform", ["android", "windows", "macos", "linux"]);
+
+/** One version of a project, e.g. 2.0.1, with its changelog. Files live in `release_files`. */
+export const releases = pgTable(
+  "releases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    version: text("version").notNull(),
+    /** One change per line. */
+    changelog: jsonb("changelog").$type<Localized>().default(emptyLocalized).notNull(),
+    status: contentStatus("status").default("draft").notNull(),
+    releasedAt: timestamp("released_at", { withTimezone: true }).defaultNow().notNull(),
+    ...timestamps,
+  },
+  (t) => [unique("releases_project_version_unique").on(t.projectId, t.version), index("releases_project_idx").on(t.projectId)],
+);
+
+/**
+ * A build for one platform. Only the newest builds per project and platform keep their object;
+ * older ones are archived: `key` becomes null but the row (and the changelog) stays.
+ */
+export const releaseFiles = pgTable(
+  "release_files",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "cascade" }),
+    platform: releasePlatform("platform").notNull(),
+    filename: text("filename").notNull(),
+    key: text("key"),
+    size: bigint("size", { mode: "number" }).notNull(),
+    sha256: text("sha256"),
+    downloads: integer("downloads").default(0).notNull(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (t) => [unique("release_files_release_platform_unique").on(t.releaseId, t.platform)],
+);
+
 /** Singleton row (id = 1) holding site-wide copy and links. */
 export const siteSettings = pgTable("site_settings", {
   id: integer("id").primaryKey().default(1),
@@ -295,9 +344,19 @@ export const activityLog = pgTable(
   (t) => [index("activity_log_created_at_idx").on(t.createdAt)],
 );
 
-export const projectsRelations = relations(projects, ({ one }) => ({
+export const projectsRelations = relations(projects, ({ one, many }) => ({
   cover: one(media, { fields: [projects.coverId], references: [media.id] }),
   category: one(categories, { fields: [projects.categoryId], references: [categories.id] }),
+  releases: many(releases),
+}));
+
+export const releasesRelations = relations(releases, ({ one, many }) => ({
+  project: one(projects, { fields: [releases.projectId], references: [projects.id] }),
+  files: many(releaseFiles),
+}));
+
+export const releaseFilesRelations = relations(releaseFiles, ({ one }) => ({
+  release: one(releases, { fields: [releaseFiles.releaseId], references: [releases.id] }),
 }));
 
 export const postsRelations = relations(posts, ({ one }) => ({
@@ -322,3 +381,6 @@ export type PageView = typeof pageViews.$inferSelect;
 export type ApiToken = typeof apiTokens.$inferSelect;
 export type OAuthClient = typeof oauthClients.$inferSelect;
 export type Activity = typeof activityLog.$inferSelect;
+export type Release = typeof releases.$inferSelect;
+export type ReleaseFile = typeof releaseFiles.$inferSelect;
+export type ReleasePlatform = (typeof releasePlatform.enumValues)[number];

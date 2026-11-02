@@ -29,6 +29,13 @@
       "when": 1793587934101,
       "tag": "0003_oauth_connector",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793607403509,
+      "tag": "0004_releases",
+      "breakpoints": true
     }
   ]
 }

@@ -91,6 +91,14 @@ Setiap halaman publik mengirim satu beacon kecil ke `/api/track` (`components/si
 
 Halaman **Analitik** menampilkan pengunjung, tayangan, halaman per kunjungan, waktu baca, konversi ke pesan masuk, tren harian dibanding periode sebelumnya, halaman teratas, sumber, negara, perangkat, bahasa, jam ramai (WIB), dan wawasan otomatis (`lib/analytics.ts`). Ringkasan **Kesehatan konten** di dashboard (`lib/cms-health.ts`) menandai karya tanpa sampul, terjemahan kosong, draf terbengkalai, dan gambar tanpa alt.
 
+## Rilis & unduhan (APK, EXE)
+
+Setiap karya punya halaman **Rilis & unduhan** di CMS (tombol di editor karya). Satu rilis berisi versi, tanggal, catatan perubahan dua bahasa (satu perubahan per baris), dan satu file per platform: Android, Windows, macOS, atau Linux. Browser mengunggah file langsung ke bucket Neon `application` lewat URL bertanda tangan, jadi tidak terkena batas ukuran request Vercel (maks 2 GB per file). Server menghitung SHA-256 lalu menampilkannya di situs.
+
+Hanya 5 build terbaru per karya dan platform yang disimpan (`KEEP_BUILDS` di `lib/release-platforms.ts`). Saat build ke-6 diunggah, file versi tertua dihapus dari bucket. Catatan versinya tetap tampil di riwayat dengan label "Diarsipkan".
+
+Tombol unduh di halaman karya mengarah ke `/api/download/<id>`. Rute ini menambah hitungan unduhan (admin yang sedang masuk dan bot tidak dihitung), lalu mengalihkan ke link sementara yang menyimpan file dengan nama aslinya. Unggah dari browser membutuhkan aturan CORS di bucket. Jalankan `bun scripts/storage-cors.ts https://domain-anda.com` setiap kali menambah domain.
+
 ## Asisten AI (MCP)
 
 `/api/mcp` adalah server [MCP](https://modelcontextprotocol.io) tanpa state (Streamable HTTP, JSON). Aplikasi Claude (web, Desktop, mobile) atau Claude Code terhubung ke sini dan menjalankan tool seperti `cms_overview`, `save_project`, `save_post`, `upload_media_from_url`, dan `get_analytics` (daftar lengkap di `lib/mcp/tools.ts`). AI-nya berjalan di aplikasi Claude milik Anda; server ini hanya menyediakan tool, jadi tidak ada biaya API.
