@@ -4,13 +4,14 @@ import { fontVariables } from "@/lib/fonts";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, locales, pick } from "@/lib/i18n";
 import { getSettings } from "@/lib/queries";
-import { alternates, siteUrl } from "@/lib/site";
+import { alternates, openGraph, siteUrl } from "@/lib/site";
 import { themeScript } from "@/lib/theme";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { HeroGlow } from "@/components/site/hero-glow";
 import { ThemeSync } from "@/components/site/theme-toggle";
 import { Analytics } from "@/components/site/analytics";
+import { JsonLd } from "@/components/site/json-ld";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -27,12 +28,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
     title: { default: "Ryuartistry", template: "%s | Ryuartistry" },
     description,
     alternates: alternates(lang),
-    openGraph: {
-      siteName: "Ryuartistry",
-      locale: lang === "id" ? "id_ID" : "en_US",
-      type: "website",
-      description,
-    },
+    openGraph: openGraph(lang, "", { title: "Ryuartistry", description }),
     twitter: { card: "summary_large_image" },
   };
 }
@@ -48,6 +44,8 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const dict = getDictionary(lang);
+  const settings = await getSettings();
+  const description = pick(settings?.tagline, lang) || dict.home.heroSubtitle;
 
   return (
     // The inline script sets data-theme before paint, so React must accept the attribute it finds.
@@ -62,6 +60,31 @@ export default async function SiteLayout({ children, params }: LayoutProps<"/[la
         >
           {dict.nav.skip}
         </a>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": `${siteUrl}/#organization`,
+                name: "Ryuartistry",
+                url: siteUrl,
+                logo: `${siteUrl}/logo.png`,
+                description,
+                email: settings?.contactEmail || undefined,
+                sameAs: settings?.socials.map((s) => s.url).filter(Boolean),
+              },
+              {
+                "@type": "WebSite",
+                "@id": `${siteUrl}/#website`,
+                url: siteUrl,
+                name: "Ryuartistry",
+                inLanguage: ["id", "en"],
+                publisher: { "@id": `${siteUrl}/#organization` },
+              },
+            ],
+          }}
+        />
         <ThemeSync />
         <Analytics />
         <Nav lang={lang} nav={dict.nav} theme={dict.theme} />

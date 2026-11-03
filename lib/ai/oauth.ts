@@ -59,6 +59,21 @@ function isLoopback(hostname: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
 
+const KNOWN_HOSTS = ["claude.ai", "claude.com"];
+
+/** Where Anthropic's Claude apps send the code back: claude.ai / claude.com, or this machine (Claude Code). */
+export function isKnownRedirect(value: string) {
+  const url = new URL(value);
+  if (url.protocol === "http:") return isLoopback(url.hostname);
+  return url.protocol === "https:" && KNOWN_HOSTS.some((h) => url.hostname === h || url.hostname.endsWith(`.${h}`));
+}
+
+/** How the redirect target is shown to the admin: the host for web URLs, the scheme for app links. */
+export function redirectLabel(value: string) {
+  const url = new URL(value);
+  return url.protocol === "https:" || url.protocol === "http:" ? url.host : url.protocol;
+}
+
 /** https anywhere, plain http only on this machine, and app schemes like `cursor://`. */
 export function isAllowedRedirectUri(value: string) {
   let url: URL;

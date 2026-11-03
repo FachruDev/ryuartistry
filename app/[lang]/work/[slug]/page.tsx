@@ -7,7 +7,8 @@ import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, pick } from "@/lib/i18n";
 import { getProjectBySlug, getPublishedSlugs } from "@/lib/queries";
 import { renderRichText } from "@/lib/render";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph, siteUrl } from "@/lib/site";
+import { JsonLd } from "@/components/site/json-ld";
 import { toneFor } from "@/lib/tones";
 import { Reveal } from "@/components/site/reveal";
 import { DetailSkeleton } from "@/components/site/skeletons";
@@ -28,11 +29,16 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug
   const project = await getProjectBySlug(slug);
   if (!project) return {};
   const title = pick(project.title, lang);
+  const description = pick(project.summary, lang) || undefined;
   return {
     title,
-    description: pick(project.summary, lang) || undefined,
+    description,
     alternates: alternates(lang, `/work/${slug}`),
-    openGraph: { title, images: project.cover ? [{ url: project.cover.url }] : undefined },
+    openGraph: openGraph(lang, `/work/${slug}`, {
+      title,
+      description,
+      images: project.cover ? [{ url: project.cover.url, alt: pick(project.cover.alt, lang) || title }] : undefined,
+    }),
   };
 }
 
@@ -62,8 +68,40 @@ async function ProjectDetail({ params }: Pick<PageProps<"/[lang]/work/[slug]">, 
     { label: dict.work.stack, value: project.techStack.join(", ") },
   ].filter((f) => f.value);
 
+  const url = `${siteUrl}/${lang}/work/${slug}`;
+
   return (
     <article>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "CreativeWork",
+              "@id": url,
+              url,
+              name: title,
+              description: pick(project.summary, lang) || undefined,
+              inLanguage: lang,
+              image: project.cover?.url,
+              dateCreated: project.year ? String(project.year) : undefined,
+              datePublished: project.publishedAt?.toISOString(),
+              dateModified: project.updatedAt.toISOString(),
+              genre: project.category ? pick(project.category.name, lang) : undefined,
+              keywords: [...project.tags, ...project.techStack].join(", ") || undefined,
+              creator: { "@type": "Organization", name: "Ryuartistry", url: siteUrl },
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Ryuartistry", item: `${siteUrl}/${lang}` },
+                { "@type": "ListItem", position: 2, name: dict.nav.work, item: `${siteUrl}/${lang}/work` },
+                { "@type": "ListItem", position: 3, name: title, item: url },
+              ],
+            },
+          ],
+        }}
+      />
       <header className="px-4 pb-12 pt-32 text-center sm:px-8 md:pb-16 md:pt-44">
         <BackLink href={`/${lang}/work`}>{dict.work.back}</BackLink>
         {project.category && (

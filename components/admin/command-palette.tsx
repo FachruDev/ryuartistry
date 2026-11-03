@@ -14,8 +14,9 @@ export function openPalette() {
 
 type Entry = { href: string; title: string; group: string; hint?: string; icon: "nav" | "new" | "hit" };
 
-const navEntries: (Entry & { keywords: string })[] = navGroups.flatMap((g) =>
+const navEntries: (Entry & { keywords: string; adminOnly?: boolean })[] = navGroups.flatMap((g) =>
   g.items.map((item) => ({
+    adminOnly: item.adminOnly,
     href: item.href,
     title: item.label,
     group: "Navigasi",
@@ -32,7 +33,7 @@ const createEntries: (Entry & { keywords: string })[] = createItems.map((item) =
 }));
 
 /** Ctrl/⌘ + K: jump to a page, start new content, or search everything in the CMS. */
-export function CommandPalette() {
+export function CommandPalette({ role }: { role: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -82,10 +83,10 @@ export function CommandPalette() {
         hint: h.status ? `${h.kind} · ${h.status === "published" ? "Terbit" : "Draf"}` : h.kind,
         icon: "hit" as const,
       })),
-      ...navEntries.filter(match),
+      ...navEntries.filter((e) => (!e.adminOnly || role === "admin") && match(e)),
       ...createEntries.filter(match),
     ];
-  }, [query, hits]);
+  }, [query, hits, role]);
 
   const close = () => {
     setOpen(false);

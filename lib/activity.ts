@@ -3,7 +3,7 @@ import { db, schema } from "@/lib/db";
 import type { Localized } from "@/lib/db/schema";
 
 export type Actor = { type: "user" | "ai"; name: string };
-export type Entity = "project" | "post" | "service" | "team" | "category" | "media" | "settings" | "inquiry" | "release";
+export type Entity = "project" | "post" | "service" | "team" | "category" | "media" | "settings" | "inquiry" | "release" | "user";
 
 export const entityLabel: Record<Entity, string> = {
   project: "karya",
@@ -15,6 +15,7 @@ export const entityLabel: Record<Entity, string> = {
   settings: "pengaturan situs",
   inquiry: "pesan",
   release: "rilis",
+  user: "pengguna",
 };
 
 /** Best readable name for a bilingual title. */

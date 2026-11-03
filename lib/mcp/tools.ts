@@ -1,4 +1,6 @@
 import "server-only";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
@@ -687,6 +689,47 @@ async function storeImage(bytes: Uint8Array, name: string | undefined, alt: Part
   return { id: row.id, url: row.url, alt: row.alt };
 }
 
+/** Loopback, private, link-local (cloud metadata), CGNAT, multicast, and reserved ranges. */
+function isPrivateAddress(address: string) {
+  if (isIP(address) === 6) {
+    const a = address.toLowerCase();
+    const mapped = a.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
+    if (mapped) return isPrivateAddress(mapped);
+    return a === "::" || a === "::1" || /^f[cd]/.test(a) || /^fe[89ab]/.test(a) || a.startsWith("ff");
+  }
+  const [a, b] = address.split(".").map(Number);
+  return (
+    a === 0 || a === 10 || a === 127 || a >= 224 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19))
+  );
+}
+
+/**
+ * Fetches a public http(s) URL. Every hop, redirects included, is resolved first and refused
+ * when any address is internal, so the server cannot be pointed at its own network.
+ */
+async function fetchPublic(start: URL) {
+  let target = start;
+  for (let hop = 0; hop < 4; hop++) {
+    if (!/^https?:$/.test(target.protocol) || (target.port && !["80", "443"].includes(target.port))) {
+      throw new ToolError("Hanya URL publik http(s) di port standar yang diizinkan.");
+    }
+    const host = target.hostname.replace(/^\[|\]$/g, "");
+    const addresses = isIP(host) ? [host] : (await lookup(host, { all: true }).catch(() => [])).map((r) => r.address);
+    if (!addresses.length) throw new ToolError(`Domain ${host} tidak ditemukan.`);
+    if (addresses.some(isPrivateAddress)) throw new ToolError("Hanya URL publik http(s) yang diizinkan.");
+    const res = await fetch(target, { redirect: "manual", signal: AbortSignal.timeout(20_000) });
+    const location = res.headers.get("location");
+    if (res.status < 300 || res.status >= 400 || !location) return res;
+    target = new URL(location, target);
+  }
+  throw new ToolError("Terlalu banyak redirect.");
+}
+
 const uploadMedia = defineTool({
   name: "upload_media_from_url",
   title: "Unggah gambar dari URL",
@@ -699,11 +742,7 @@ const uploadMedia = defineTool({
   }),
   run: async ({ url, alt, filename }, { actor }) => {
     const target = new URL(url);
-    // Token holders are trusted editors, but keep the server from fetching its own network.
-    if (!/^https?:$/.test(target.protocol) || /^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|\[)/.test(target.hostname)) {
-      throw new ToolError("Hanya URL publik http(s) yang diizinkan.");
-    }
-    const res = await fetch(target, { redirect: "follow", signal: AbortSignal.timeout(20_000) });
+    const res = await fetchPublic(target);
     if (!res.ok) throw new ToolError(`Gagal mengunduh gambar (HTTP ${res.status}).`);
     if (Number(res.headers.get("content-length")) > MAX_IMAGE_BYTES) throw new ToolError("Gambar lebih dari 8 MB.");
     const bytes = new Uint8Array(await res.arrayBuffer());

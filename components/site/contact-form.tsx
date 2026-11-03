@@ -14,12 +14,15 @@ const label = "text-sm font-semibold text-muted";
 export function ContactForm({ t }: { t: Dictionary["contact"] }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(submitInquiry, { status: "idle" });
   const typeRef = useRef<HTMLFieldSetElement>(null);
+  // When the form appeared; the server ignores messages sent within seconds of that, which only bots manage.
+  const startedRef = useRef<HTMLInputElement>(null);
   const invalid = (name: string) => (state.status === "error" && state.fields?.includes(name) ? true : undefined);
 
   useEffect(() => {
     const type = new URLSearchParams(window.location.search).get("type");
     const input = typeRef.current?.querySelector<HTMLInputElement>(`input[value="${type}"]`);
     if (input) input.checked = true;
+    if (startedRef.current) startedRef.current.value = String(Date.now());
   }, []);
 
   if (state.status === "success") {
@@ -48,6 +51,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
           <input type="text" name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
+      <input ref={startedRef} type="hidden" name="startedAt" />
 
       <fieldset ref={typeRef}>
         <legend className={`mb-3 ${label}`}>{t.type}</legend>
@@ -84,7 +88,7 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
 
       {state.status === "error" && (
         <p role="alert" className="rounded-2xl bg-sakura px-4 py-3 font-medium text-on-pastel">
-          {t.error}
+          {state.limited ? t.limited : t.error}
         </p>
       )}
 

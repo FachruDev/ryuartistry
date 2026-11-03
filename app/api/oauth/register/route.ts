@@ -1,8 +1,12 @@
 import { corsHeaders, oauthError, registerClient } from "@/lib/ai/oauth";
+import { clientIp, hashed, hit } from "@/lib/rate-limit";
 
 // RFC 7591 dynamic client registration. Registering grants nothing by itself:
 // every client still needs an admin to approve it on /admin/authorize.
 export async function POST(request: Request) {
+  if (await hit({ key: `oauth-register:ip:${hashed(clientIp(request.headers))}`, max: 20, windowMs: 60 * 60_000 })) {
+    return oauthError("slow_down", "Terlalu banyak pendaftaran dari jaringan ini. Coba lagi nanti.", 429);
+  }
   let body: unknown;
   try {
     body = await request.json();

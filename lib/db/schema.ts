@@ -42,6 +42,8 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
   role: text("role").default("editor").notNull(),
+  /** Set when an admin turns the account off; such users cannot sign in or use their tokens. */
+  disabledAt: timestamp("disabled_at", { withTimezone: true }),
   ...timestamps,
 });
 
@@ -327,6 +329,13 @@ export const apiTokens = pgTable("api_tokens", {
   lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   revokedAt: timestamp("revoked_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/** Fixed-window counters for login, contact, and other public endpoints, shared by every serverless instance. */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
 });
 
 export const activityLog = pgTable(

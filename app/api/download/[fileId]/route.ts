@@ -1,6 +1,6 @@
 import { userAgent } from "next/server";
 import { eq, sql } from "drizzle-orm";
-import { getSessionCookie } from "better-auth/cookies";
+import { auth } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { downloadContentType } from "@/lib/release-platforms";
 import { presignBuildDownload } from "@/lib/storage";
@@ -14,10 +14,12 @@ export async function GET(request: Request, { params }: RouteContext<"/api/downl
     where: eq(schema.releaseFiles.id, fileId),
     with: { release: { with: { project: { columns: { status: true, slug: true } } } } },
   });
-  const signedIn = Boolean(getSessionCookie(request.headers));
-  const visible = file && file.release.status === "published" && file.release.project.status === "published";
-  // Editors can fetch drafts from the CMS; visitors only see what is published.
-  if (!file || (!visible && !signedIn)) return new Response("Not found", { status: 404 });
+  if (!file) return new Response("Not found", { status: 404 });
+  // Editors can fetch drafts from the CMS; visitors only see what is published. The session is
+  // verified, not just looked for: any cookie with the right name would pass a presence check.
+  const signedIn = Boolean(await auth.api.getSession({ headers: request.headers }));
+  const visible = file.release.status === "published" && file.release.project.status === "published";
+  if (!visible && !signedIn) return new Response("Not found", { status: 404 });
   if (!file.key) {
     return new Response("Versi ini sudah diarsipkan dan filenya tidak tersedia lagi.", {
       status: 410,

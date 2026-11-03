@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, WarningCircle } from "@phosphor-icons/react/ssr";
 import { requireUser } from "@/lib/auth";
-import { validateAuthorizeRequest } from "@/lib/ai/oauth";
+import { isKnownRedirect, redirectLabel, validateAuthorizeRequest } from "@/lib/ai/oauth";
 import { approveAuthorization, denyAuthorization } from "@/lib/actions/oauth";
-import { SubmitButton } from "@/components/admin/ui";
+import { Field, Input, SubmitButton } from "@/components/admin/ui";
 
 export const metadata: Metadata = { title: "Izinkan akses" };
 export const instant = false;
@@ -60,7 +60,8 @@ export default async function AuthorizePage({ searchParams }: PageProps<"/admin/
   }
 
   const { client, redirectUri, codeChallenge, state } = result.request;
-  const target = new URL(redirectUri);
+  const destination = redirectLabel(redirectUri);
+  const known = isKnownRedirect(redirectUri);
   const hidden = {
     client_id: client.id,
     redirect_uri: redirectUri,
@@ -88,21 +89,42 @@ export default async function AuthorizePage({ searchParams }: PageProps<"/admin/
         ))}
       </ul>
 
-      <p className="mt-5 rounded-md border border-line bg-paper-raised px-3 py-2 text-xs text-muted">
-        Setelah diizinkan, Anda diarahkan ke <code className="text-ink">{target.protocol === "https:" || target.protocol === "http:" ? target.host : target.protocol}</code>.
-        Akses bisa dicabut kapan saja di CMS → Asisten AI.
-      </p>
+      {known ? (
+        <p className="mt-5 flex gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-xs text-text">
+          <ShieldCheck size={16} weight="fill" className="shrink-0 text-success" />
+          <span>
+            Akses dikirim ke <code>{destination}</code>, alamat resmi aplikasi Claude. Bisa dicabut kapan saja di CMS → Asisten AI.
+          </span>
+        </p>
+      ) : (
+        <div role="alert" className="mt-5 space-y-1.5 rounded-md border border-danger/40 bg-danger/10 px-3 py-2.5 text-sm text-text">
+          <p className="flex items-center gap-2 font-semibold text-danger">
+            <WarningCircle size={18} weight="fill" /> Alamat tujuan tidak dikenal
+          </p>
+          <p>
+            Token CMS akan dikirim ke <code className="font-semibold">{destination}</code>, bukan ke Claude. Nama aplikasi di atas ditulis sendiri oleh pendaftar dan bisa dipalsukan.
+            Lanjutkan hanya jika Anda sendiri yang memulai koneksi ini.
+          </p>
+        </div>
+      )}
 
-      <form className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <form className="mt-6 space-y-4">
         {Object.entries(hidden).map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={value} />
         ))}
+        {!known && (
+          <Field label={`Ketik ${destination} untuk melanjutkan`} error={params.confirm ? "Ketik alamat tujuan persis seperti di atas." : undefined}>
+            <Input name="acknowledge" autoComplete="off" spellCheck={false} />
+          </Field>
+        )}
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <SubmitButton formAction={denyAuthorization} variant="ghost" pendingLabel="Membatalkan…">
           Tolak
         </SubmitButton>
         <SubmitButton formAction={approveAuthorization} pendingLabel="Menghubungkan…">
           Izinkan akses
         </SubmitButton>
+        </div>
       </form>
     </Panel>
   );

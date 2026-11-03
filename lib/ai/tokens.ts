@@ -22,11 +22,14 @@ export async function issueToken(name: string, userId: string, oauthClientId?: s
 export async function verifyBearer(header: string | null) {
   const token = header?.match(/^Bearer\s+(ryu_[\w-]+)$/i)?.[1];
   if (!token) return null;
-  const [row] = await db
-    .select()
+  const [match] = await db
+    .select({ token: schema.apiTokens, ownerDisabledAt: schema.user.disabledAt })
     .from(schema.apiTokens)
+    // A token only works while the person who created it still has an active account.
+    .innerJoin(schema.user, eq(schema.user.id, schema.apiTokens.createdBy))
     .where(and(eq(schema.apiTokens.tokenHash, hash(token)), isNull(schema.apiTokens.revokedAt)));
-  if (!row) return null;
+  if (!match || match.ownerDisabledAt) return null;
+  const row = match.token;
   // Coarse "last used" so the token list shows activity without a write on every call.
   if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 60_000) {
     await db.update(schema.apiTokens).set({ lastUsedAt: new Date() }).where(eq(schema.apiTokens.id, row.id));

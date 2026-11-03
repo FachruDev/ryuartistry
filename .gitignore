@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 
 .claude*
+
+# security audit reports (contain vulnerability details)
+security-review/

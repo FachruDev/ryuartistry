@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale } from "@/lib/i18n";
 import { getSettings } from "@/lib/queries";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph } from "@/lib/site";
 import { ContactForm } from "@/components/site/contact-form";
 import { PageIntro } from "@/components/site/page-intro";
 import { PageTransition } from "@/components/site/page-transition";
@@ -13,7 +13,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/contact">)
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.nav.contact, description: dict.contact.intro, alternates: alternates(lang, "/contact") };
+  return { title: dict.nav.contact, description: dict.contact.intro, alternates: alternates(lang, "/contact"),
+    openGraph: openGraph(lang, "/contact", { title: dict.nav.contact, description: dict.contact.intro }),
+  };
 }
 
 export default async function ContactPage({ params }: PageProps<"/[lang]/contact">) {

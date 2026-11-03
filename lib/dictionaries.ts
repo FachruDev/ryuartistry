@@ -119,6 +119,7 @@ const id = {
     sending: "Mengirim…",
     success: "Terima kasih! Pesanmu sudah sampai di meja kami.",
     error: "Pesan belum terkirim. Periksa kolom yang ditandai.",
+    limited: "Terlalu banyak pesan dari jaringan ini. Coba lagi dalam satu jam, atau kirim email langsung.",
   },
   footer: {
     explore: "Jelajahi",
@@ -252,6 +253,7 @@ const en: Dictionary = {
     sending: "Sending…",
     success: "Thank you! Your message has landed on our desk.",
     error: "Your message wasn't sent. Check the highlighted fields.",
+    limited: "Too many messages from this network. Try again in an hour, or email us directly.",
   },
   footer: {
     explore: "Explore",

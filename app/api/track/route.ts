@@ -4,6 +4,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { getSessionCookie } from "better-auth/cookies";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
+import { clientIp, hashed, hit } from "@/lib/rate-limit";
 
 const viewSchema = z.object({
   type: z.literal("view"),
@@ -46,6 +47,9 @@ export async function POST(request: Request) {
 
   const ua = userAgent(request);
   if (ua.isBot) return new Response(null, { status: 204 });
+  // Far above what one person browsing produces; stops a script from flooding the stats.
+  const ip = clientIp(request.headers);
+  if (await hit({ key: `track:ip:${hashed(ip)}`, max: 300, windowMs: 10 * 60_000 })) return new Response(null, { status: 429 });
 
   let body: z.infer<typeof bodySchema>;
   try {
@@ -64,7 +68,6 @@ export async function POST(request: Request) {
 
   const url = new URL(body.path, "http://x");
   const locale = url.pathname.split("/")[1];
-  const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "local";
 
   await db
     .insert(schema.pageViews)

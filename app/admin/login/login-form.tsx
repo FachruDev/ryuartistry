@@ -9,6 +9,13 @@ export function LoginForm({ next }: { next?: string }) {
   return (
     <form action={action} className="mt-6 space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
+      {/* Honeypot for bots; hidden from people and assistive tech. */}
+      <div aria-hidden className="absolute -left-[9999px]">
+        <label>
+          Website
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       <Field label="Email">
         <Input name="email" type="email" autoComplete="email" required />
       </Field>

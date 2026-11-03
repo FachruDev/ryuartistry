@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { createCode, originOf, validateAuthorizeRequest } from "@/lib/ai/oauth";
+import { createCode, isKnownRedirect, originOf, redirectLabel, validateAuthorizeRequest } from "@/lib/ai/oauth";
 
 const fields = ["client_id", "redirect_uri", "response_type", "code_challenge", "code_challenge_method", "state"] as const;
 
@@ -24,6 +24,11 @@ function callback(redirectUri: string, values: Record<string, string>) {
 export async function approveAuthorization(form: FormData) {
   const user = await requireAdmin();
   const request = await readRequest(form);
+  // Anyone can register an app under any name, so an unknown destination must be confirmed by typing nothing less than its exact host.
+  if (!isKnownRedirect(request.redirectUri) && form.get("acknowledge") !== redirectLabel(request.redirectUri)) {
+    const back = new URLSearchParams(Object.fromEntries(fields.map((f) => [f, form.get(f)?.toString() ?? ""])));
+    redirect(`/admin/authorize?${back}&confirm=1`);
+  }
   const code = await createCode(request, user.id);
   redirect(callback(request.redirectUri, { code, state: request.state, iss: originOf(await headers()) }));
 }

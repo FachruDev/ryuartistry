@@ -4,7 +4,7 @@ import { toPostRow } from "@/lib/cards";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale } from "@/lib/i18n";
 import { getPosts } from "@/lib/queries";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph } from "@/lib/site";
 import { PageIntro } from "@/components/site/page-intro";
 import { PageTransition } from "@/components/site/page-transition";
 import { PostList } from "@/components/site/post-list";
@@ -14,7 +14,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/lab">): Pr
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.nav.lab, description: dict.lab.intro, alternates: alternates(lang, "/lab") };
+  return { title: dict.nav.lab, description: dict.lab.intro, alternates: alternates(lang, "/lab"),
+    openGraph: openGraph(lang, "/lab", { title: dict.nav.lab, description: dict.lab.intro }),
+  };
 }
 
 export default async function LabPage({ params }: PageProps<"/[lang]/lab">) {

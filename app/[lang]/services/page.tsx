@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale, pick } from "@/lib/i18n";
 import { getServices } from "@/lib/queries";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph } from "@/lib/site";
 import { toneFor } from "@/lib/tones";
 import { CtaCard } from "@/components/site/cta-card";
 import { PageIntro } from "@/components/site/page-intro";
@@ -15,7 +15,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/services">
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.nav.services, description: dict.services.intro, alternates: alternates(lang, "/services") };
+  return { title: dict.nav.services, description: dict.services.intro, alternates: alternates(lang, "/services"),
+    openGraph: openGraph(lang, "/services", { title: dict.nav.services, description: dict.services.intro }),
+  };
 }
 
 export default async function ServicesPage({ params }: PageProps<"/[lang]/services">) {

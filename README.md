@@ -124,6 +124,15 @@ Gambar bisa masuk tiga cara: `upload_media_from_url` untuk gambar publik di inte
 
 Setiap perubahan oleh AI tercatat di **Aktivitas terbaru** dengan nama tokennya, dan cache halaman publik langsung diperbarui. Token bisa dicabut kapan saja dari halaman yang sama.
 
+## Pengguna & keamanan
+
+- **Pengguna** (`/admin/users`, khusus admin): tambah akun dengan password awal acak yang tampil sekali, ganti role admin/editor, reset password, putus sesi, nonaktifkan. Akun nonaktif tidak bisa membuka sesi baru (`databaseHooks` di `lib/auth.ts`), sesinya dihapus, dan token AI yang ia buat dicabut. CMS selalu menyisakan minimal satu admin aktif.
+- **Akun** (`/admin/account`): ganti nama, ganti password (minimal 12 karakter, menolak password umum dan yang memuat nama/email/situs, keluar dari perangkat lain), daftar sesi aktif.
+- **Login** hanya lewat Server Action `signIn`, dengan batas 5 gagal per email dan 20 per jaringan per 15 menit, plus honeypot. Endpoint HTTP Better Auth untuk sign-in/sign-up/reset/ganti password ditutup (`disabledPaths`) supaya batas itu tidak bisa dilewati.
+- **Batas laju** disimpan di tabel `rate_limits` (`lib/rate-limit.ts`), jadi berlaku di semua instance Vercel. IP dan email disimpan sebagai hash. Dipakai juga untuk form kontak (5/jam per jaringan, ditambah honeypot dan penolakan kiriman di bawah 3 detik), `/api/track`, dan `/api/oauth/register`.
+- **Header**: CSP `frame-ancestors 'none'`, `X-Frame-Options`, `nosniff`, Referrer-Policy, dan Permissions-Policy untuk semua halaman (`next.config.ts`); halaman CMS `no-store`.
+- **Connector OAuth**: redirect di luar claude.ai/claude.com/localhost diberi peringatan dan harus dikonfirmasi dengan mengetik alamat tujuan.
+
 ## Deploy ke Vercel
 
 1. Buka https://vercel.com/new, impor repo `FachruDev/ryuartistry`. Framework (Next.js) dan Bun terdeteksi otomatis dari `bun.lock`; build command dan output tidak perlu diubah.

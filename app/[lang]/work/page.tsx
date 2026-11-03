@@ -4,7 +4,7 @@ import { toWorkCard } from "@/lib/cards";
 import { getDictionary } from "@/lib/dictionaries";
 import { isLocale } from "@/lib/i18n";
 import { getCategories, getProjects } from "@/lib/queries";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph } from "@/lib/site";
 import { PageIntro } from "@/components/site/page-intro";
 import { PageTransition } from "@/components/site/page-transition";
 import { WorkGrid } from "@/components/site/work-grid";
@@ -13,7 +13,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work">): P
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.nav.work, description: dict.work.intro, alternates: alternates(lang, "/work") };
+  return { title: dict.nav.work, description: dict.work.intro, alternates: alternates(lang, "/work"),
+    openGraph: openGraph(lang, "/work", { title: dict.nav.work, description: dict.work.intro }),
+  };
 }
 
 export default async function WorkPage({ params }: PageProps<"/[lang]/work">) {

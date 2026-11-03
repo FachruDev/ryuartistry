@@ -9,7 +9,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entry = (path: string, lastModified?: Date): MetadataRoute.Sitemap[number] => ({
     url: `${siteUrl}/id${path}`,
     lastModified,
-    alternates: { languages: Object.fromEntries(locales.map((l) => [l, `${siteUrl}/${l}${path}`])) },
+    alternates: {
+      languages: { ...Object.fromEntries(locales.map((l) => [l, `${siteUrl}/${l}${path}`])), "x-default": `${siteUrl}/id${path}` },
+    },
   });
 
   return [

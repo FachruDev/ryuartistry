@@ -6,7 +6,8 @@ import { getDictionary } from "@/lib/dictionaries";
 import { formatDate, isLocale, pick } from "@/lib/i18n";
 import { getPostBySlug, getPublishedSlugs } from "@/lib/queries";
 import { renderRichText } from "@/lib/render";
-import { alternates } from "@/lib/site";
+import { alternates, openGraph, siteUrl } from "@/lib/site";
+import { JsonLd } from "@/components/site/json-ld";
 import { toneFor } from "@/lib/tones";
 import { Reveal } from "@/components/site/reveal";
 import { DetailSkeleton } from "@/components/site/skeletons";
@@ -25,16 +26,20 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/lab/[slug]
   const post = await getPostBySlug(slug);
   if (!post) return {};
   const title = pick(post.title, lang);
+  const description = pick(post.excerpt, lang) || undefined;
   return {
     title,
-    description: pick(post.excerpt, lang) || undefined,
+    description,
     alternates: alternates(lang, `/lab/${slug}`),
-    openGraph: {
+    openGraph: openGraph(lang, `/lab/${slug}`, {
       type: "article",
       title,
+      description,
       publishedTime: post.publishedAt?.toISOString(),
-      images: post.cover ? [{ url: post.cover.url }] : undefined,
-    },
+      modifiedTime: post.updatedAt.toISOString(),
+      authors: post.author?.name ? [post.author.name] : undefined,
+      images: post.cover ? [{ url: post.cover.url, alt: pick(post.cover.alt, lang) || title }] : undefined,
+    }),
   };
 }
 
@@ -59,8 +64,41 @@ async function PostDetail({ params }: Pick<PageProps<"/[lang]/lab/[slug]">, "par
   const tone = toneFor(post.category?.slug, "var(--mizu)");
   const body = renderRichText(post.body[lang] ?? post.body[lang === "id" ? "en" : "id"]);
 
+  const url = `${siteUrl}/${lang}/lab/${slug}`;
+
   return (
     <article>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BlogPosting",
+              "@id": url,
+              url,
+              mainEntityOfPage: url,
+              headline: title,
+              description: pick(post.excerpt, lang) || undefined,
+              inLanguage: lang,
+              image: post.cover?.url,
+              datePublished: post.publishedAt?.toISOString(),
+              dateModified: post.updatedAt.toISOString(),
+              author: post.author?.name ? { "@type": "Person", name: post.author.name } : { "@type": "Organization", name: "Ryuartistry" },
+              publisher: { "@type": "Organization", name: "Ryuartistry", url: siteUrl, logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` } },
+              articleSection: post.category ? pick(post.category.name, lang) : undefined,
+              timeRequired: `PT${post.readingTime}M`,
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Ryuartistry", item: `${siteUrl}/${lang}` },
+                { "@type": "ListItem", position: 2, name: dict.nav.lab, item: `${siteUrl}/${lang}/lab` },
+                { "@type": "ListItem", position: 3, name: title, item: url },
+              ],
+            },
+          ],
+        }}
+      />
       <header className="px-4 pb-12 pt-32 text-center sm:px-8 md:pb-16 md:pt-44">
         <BackLink href={`/${lang}/lab`}>{dict.lab.back}</BackLink>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">

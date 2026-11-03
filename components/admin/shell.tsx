@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, List, MagnifyingGlass, SignOut, X } from "@phosphor-icons/react";
-import { isActive, navGroups } from "./nav-items";
+import { isActive, visibleGroups } from "./nav-items";
 import { CommandPalette, openPalette } from "./command-palette";
 import { ThemeToggle } from "@/components/site/theme-toggle";
 
@@ -29,7 +29,7 @@ function Sidebar({ user, unread, signOut }: { user: User; unread: number; signOu
       <p className="px-5 text-xs font-medium text-muted">Content studio</p>
 
       <nav aria-label="Menu CMS" className="mt-6 flex-1 space-y-5 overflow-y-auto px-3 pb-6">
-        {navGroups.map((group, i) => (
+        {visibleGroups(user.role).map((group, i) => (
           <div key={group.label ?? i}>
             {group.label && (
               <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted/80">{group.label}</p>
@@ -61,13 +61,15 @@ function Sidebar({ user, unread, signOut }: { user: User; unread: number; signOu
       </nav>
 
       <div className="m-3 flex items-center gap-3 rounded-xl border border-line bg-paper p-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-wisteria text-sm font-bold text-on-pastel">
-          {initials(user.name)}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{user.name}</p>
-          <p className="truncate text-xs text-muted">{user.role === "admin" ? "Admin" : "Editor"}</p>
-        </div>
+        <Link href="/admin/account" title="Akun saya" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg hover:opacity-80">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-wisteria text-sm font-bold text-on-pastel">
+            {initials(user.name)}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{user.name}</span>
+            <span className="block truncate text-xs text-muted">{user.role === "admin" ? "Admin" : "Editor"} · Akun</span>
+          </span>
+        </Link>
         <form action={signOut}>
           <button
             title="Keluar"
@@ -180,7 +182,7 @@ export function AdminShell({
         <main className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-8 lg:px-10">{children}</main>
       </div>
 
-      <CommandPalette />
+      <CommandPalette role={user.role} />
     </div>
   );
 }
