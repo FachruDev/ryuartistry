@@ -15,7 +15,9 @@ declare global {
   }
 }
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+// The Ryuartistry widget's site key is public by design; NEXT_PUBLIC_TURNSTILE_SITE_KEY overrides it
+// (for example with Cloudflare's test key in .env.local).
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAAFxt0M8OsGGRp7SP";
 
 /**
  * Cloudflare Turnstile ("saya bukan robot"). It adds a hidden `cf-turnstile-response` field to the
