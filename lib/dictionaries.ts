@@ -120,6 +120,7 @@ const id = {
     success: "Terima kasih! Pesanmu sudah sampai di meja kami.",
     error: "Pesan belum terkirim. Periksa kolom yang ditandai.",
     limited: "Terlalu banyak pesan dari jaringan ini. Coba lagi dalam satu jam, atau kirim email langsung.",
+    captcha: "Verifikasi \"saya bukan robot\" belum berhasil. Selesaikan kotak verifikasi di atas tombol, lalu kirim lagi.",
   },
   footer: {
     explore: "Jelajahi",
@@ -254,6 +255,7 @@ const en: Dictionary = {
     success: "Thank you! Your message has landed on our desk.",
     error: "Your message wasn't sent. Check the highlighted fields.",
     limited: "Too many messages from this network. Try again in an hour, or email us directly.",
+    captcha: "The \"I'm not a robot\" check didn't pass. Complete the verification box above the button, then send again.",
   },
   footer: {
     explore: "Explore",

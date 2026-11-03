@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { db, schema } from "@/lib/db";
 import { str } from "@/lib/forms";
 import { clientIp, hashed, hit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -17,7 +18,7 @@ const contactSchema = z.object({
   message: z.string().trim().min(10).max(5000),
 });
 
-export type ContactState = { status: "idle" | "success" | "error"; fields?: string[]; limited?: boolean };
+export type ContactState = { status: "idle" | "success" | "error"; fields?: string[]; limited?: boolean; captcha?: boolean };
 
 const MIN_FILL_MS = 3_000;
 
@@ -40,8 +41,13 @@ export async function submitInquiry(_prev: ContactState, form: FormData): Promis
     return { status: "error", fields: parsed.error.issues.map((i) => String(i.path[0])) };
   }
 
+  const ip = clientIp(await headers());
+  if (!(await verifyTurnstile(str(form, "cf-turnstile-response"), ip, "contact"))) {
+    return { status: "error", captcha: true };
+  }
+
   // A few messages per network per hour; random email addresses no longer get around the limit below.
-  if (await hit({ key: `contact:ip:${hashed(clientIp(await headers()))}`, max: 5, windowMs: 60 * 60_000 })) {
+  if (await hit({ key: `contact:ip:${hashed(ip)}`, max: 5, windowMs: 60 * 60_000 })) {
     return { status: "error", limited: true };
   }
 

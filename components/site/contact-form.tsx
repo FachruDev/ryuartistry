@@ -5,13 +5,14 @@ import { motion } from "motion/react";
 import { Check } from "@phosphor-icons/react";
 import { submitInquiry, type ContactState } from "@/lib/actions/inquiries";
 import type { Dictionary } from "@/lib/dictionaries";
+import { Turnstile } from "./turnstile";
 import { ArrowIcon, buttonClass } from "./ui";
 
 const field =
   "w-full rounded-2xl bg-paper px-5 py-4 text-lg text-ink ring-1 ring-line outline-none transition-shadow duration-300 placeholder:text-muted/60 focus:ring-2 focus:ring-ink aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-danger";
 const label = "text-sm font-semibold text-muted";
 
-export function ContactForm({ t }: { t: Dictionary["contact"] }) {
+export function ContactForm({ t, lang }: { t: Dictionary["contact"]; lang: string }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(submitInquiry, { status: "idle" });
   const typeRef = useRef<HTMLFieldSetElement>(null);
   // When the form appeared; the server ignores messages sent within seconds of that, which only bots manage.
@@ -88,9 +89,11 @@ export function ContactForm({ t }: { t: Dictionary["contact"] }) {
 
       {state.status === "error" && (
         <p role="alert" className="rounded-2xl bg-sakura px-4 py-3 font-medium text-on-pastel">
-          {state.limited ? t.limited : t.error}
+          {state.limited ? t.limited : state.captcha ? t.captcha : t.error}
         </p>
       )}
+
+      <Turnstile action="contact" lang={lang} resetKey={state} />
 
       <button
         type="submit"

@@ -30,7 +30,7 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
       <section className="px-4 sm:px-8">
         <Reveal className="mx-auto max-w-[880px]">
           <div className="rounded-[2.5rem] bg-paper-raised p-5 ring-1 ring-line sm:p-10 md:rounded-[3.5rem] md:p-14">
-            <ContactForm t={dict.contact} />
+            <ContactForm t={dict.contact} lang={lang} />
           </div>
         </Reveal>
         {(settings?.contactEmail || (settings && settings.socials.length > 0)) && (
